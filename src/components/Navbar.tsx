@@ -24,7 +24,7 @@ const Navbar: React.FC = () => {
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled 
           ? 'bg-black shadow-md py-2' 
-          : 'bg-transparent py-4'
+          : 'bg-black py-4'
       }`}
     >
       <div className="container mx-auto px-4">
@@ -42,14 +42,7 @@ const Navbar: React.FC = () => {
             <Link href="/sponsors" className="text-white hover:text-orange transition-colors">Sponsors</Link>
             <Link href="/media" className="text-white hover:text-orange transition-colors">Media</Link>
             <Link href="/social" className="text-white hover:text-orange transition-colors">Social</Link>
-            <Link 
-              href="insert(tracking app URL)here" 
-              className="bg-orange text-white px-4 py-2 rounded-full hover:bg-orange-600 transition-colors"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Stats & Scores
-            </Link>
+            <Link href="/scores" className="text-white hover:text-orange transition-colors">Scores</Link>
           </nav>
 
           {/* Mobile Navigation Toggle */}
@@ -70,14 +63,7 @@ const Navbar: React.FC = () => {
               <Link href="/sponsors" className="text-white hover:text-orange transition-colors">Sponsors</Link>
               <Link href="/media" className="text-white hover:text-orange transition-colors">Media</Link>
               <Link href="/social" className="text-white hover:text-orange transition-colors">Social</Link>
-              <Link 
-                href="insert(tracking app URL)here" 
-                className="bg-orange text-white px-4 py-2 rounded-full hover:bg-orange-600 transition-colors inline-block text-center"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Stats & Scores
-              </Link>
+              <Link href="/scores" className="text-white hover:text-orange transition-colors">Scores</Link>
             </div>
           </div>
         )}

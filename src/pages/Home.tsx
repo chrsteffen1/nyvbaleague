@@ -4,7 +4,7 @@ import SponsorCard from '../components/SponsorCard';
 import MediaCard from '../components/MediaCard';
 import LiveStream from '../components/LiveStream';
 import { Link } from '../components/Link';
-import { Trophy, Calendar, Users, ArrowRight } from 'lucide-react';
+import { Trophy, Calendar, ArrowRight } from 'lucide-react';
 
 const Home: React.FC = () => {
   // Featured sponsors (sample data)
@@ -54,9 +54,6 @@ const Home: React.FC = () => {
     <div>
       <Hero 
         title="Volleyball League Excellence" 
-        subtitle="Join our growing community of volleyball enthusiasts. Three divisions, three nights a week, unlimited competition and fun."
-        ctaText="Join Our League"
-        ctaLink="/contact"
         backgroundImage="https://images.pexels.com/photos/6551144/pexels-photo-6551144.jpeg?auto=compress&cs=tinysrgb&w=1920"
       />
 
@@ -223,25 +220,7 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Join Our League CTA */}
-      <section className="py-16 bg-orange text-white">
-        <div className="container mx-auto px-4 text-center">
-          <div className="flex flex-col items-center">
-            <Users size={48} className="mb-4" />
-            <h2 className="text-3xl font-bold mb-4">Ready to Join Our League?</h2>
-            <p className="text-xl max-w-2xl mx-auto mb-8">
-              Whether you're a seasoned player or looking to improve your skills, 
-              we have a place for you in our volleyball community.
-            </p>
-            <Link 
-              href="/contact" 
-              className="inline-block bg-white text-orange px-8 py-3 rounded-full text-lg font-semibold hover:bg-navy hover:text-white transition-colors"
-            >
-              Register Now
-            </Link>
-          </div>
-        </div>
-      </section>
+      
     </div>
   );
 };
