@@ -217,16 +217,6 @@ const Sponsors: React.FC = () => {
                       </a>
                     </div>
                   </div>
-                  <div className="mt-6">
-                    <a 
-                      href="insert(sponsorship packet URL)here" 
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-block bg-orange text-white px-4 py-2 rounded hover:bg-blue-900 transition-colors"
-                    >
-                      Download Sponsorship Package
-                    </a>
-                  </div>
                 </div>
               </div>
             </div>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Navbar from '../components/Navbar'; // Adjust path if necessary
 import Footer from '../components/Footer'; // Adjust path if necessary
-
+import Hero from '../components/Hero'; // Import Hero component
 const Scores: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'mens-a' | 'mens-b' | 'womens-a'>('mens-a');
 
@@ -36,6 +36,11 @@ const Scores: React.FC = () => {
     <div className="flex flex-col min-h-screen">
       {/* Navbar Placeholder */}
       <Navbar />
+      <Hero
+        title="League Scores"
+        subtitle="Stay updated with the latest results"
+        backgroundImage="https://images.pexels.com/photos/1202587/pexels-photo-1202587.jpeg?auto=compress&cs=tinysrgb&w=1920"
+      />
 
       <main className="flex-grow container mx-auto px-4 py-8">
         <h1 className="text-4xl font-bold text-center mb-8">League Scores</h1>

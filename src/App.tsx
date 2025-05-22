@@ -7,6 +7,7 @@ import Sponsors from './pages/Sponsors';
 import Media from './pages/Media';
 import Social from './pages/Social';
 import Contact from './pages/Contact';
+import Scores from './pages/Scores';
 
 function App() {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
@@ -34,6 +35,7 @@ function App() {
       '/media': 'Media Gallery',
       '/social': 'Social & Live Streams',
       '/contact': 'Contact Us',
+      '/scores': 'Scores',
     };
     
     document.title = pathTitles[currentPath] || 'VolleyLeague';
@@ -54,6 +56,8 @@ function App() {
         return <Social />;
       case '/contact':
         return <Contact />;
+      case '/scores':
+        return <Scores />;
       default:
         return <Home />;
     }
