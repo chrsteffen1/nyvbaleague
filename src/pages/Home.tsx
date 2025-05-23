@@ -53,7 +53,7 @@ const Home: React.FC = () => {
     <div>
       <Hero 
         title="Volleyball League Excellence" 
-        backgroundImage="https://images.pexels.com/photos/6551144/pexels-photo-6551144.jpeg?auto=compress&cs=tinysrgb&w=1920"
+        backgroundImage="https://images.pexels.com/photos/1552620/pexels-photo-1552620.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
       />
 
       {/* League Divisions */}

@@ -25,10 +25,10 @@ const ScoresAndAwards: React.FC = () => {
       { name: "Thunder", wins: 4, losses: 6, played: 10 },
     ],
     'mens-b': [
-      { name: "Setters", wins: 7, losses: 3, played: 10 },
-      { name: "Diggers", wins: 6, losses: 4, played: 10 },
-      { name: "Smashers", wins: 4, losses: 6, played: 10 },
-      { name: "Lightning", wins: 3, losses: 7, played: 10 },
+      { name: "Curricane 🏆", wins: 39, losses: 21, played: 60 },
+      { name: "Fisherman 🥈", wins: 33, losses: 27, played: 60 },
+      { name: "Team CBD_LI_NY 🥉", wins: 31, losses: 29, played: 60 },
+      { name: "Veni Volli Vici", wins: 29, losses: 31, played: 60 },
     ],
     'womens-a': [
       { name: "Aces", wins: 9, losses: 1, played: 10 },
@@ -54,7 +54,7 @@ const ScoresAndAwards: React.FC = () => {
       <Hero
         title="League Scores, Statistics & Player Awards"
         subtitle="Stay updated with the latest results, team statistics and player awards"
-        backgroundImage="https://images.pexels.com/photos/1202587/pexels-photo-1202587.jpeg?auto=compress&cs=tinysrgb&w=1920"
+        backgroundImage="https://images.pexels.com/photos/2444852/pexels-photo-2444852.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
       />
 
       <section className="py-16 bg-white">

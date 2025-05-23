@@ -65,7 +65,7 @@ const Social: React.FC = () => {
       <Hero 
         title="Social & Live Streams" 
         subtitle="Whether you're a player, a fan, or just love volleyball, subscribe and never miss a serve, spike, or rally!"
-        backgroundImage="https://images.pexels.com/photos/6551144/pexels-photo-6551144.jpeg?auto=compress&cs=tinysrgb&w=1920"
+        backgroundImage="https://images.pexels.com/photos/15741340/pexels-photo-15741340/free-photo-of-volleyball-players-hugging-each-other.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
       />
 {/* Social Feeds */}
       <section className="py-16 bg-white">

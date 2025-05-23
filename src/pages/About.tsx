@@ -23,7 +23,7 @@ const About: React.FC = () => {
       teams: ["Setters", "Diggers", "Smashers", "Lightning"]
     },
     'womens-a': {
-      name: "Women's A Division",
+      name: "Women's Division",
       schedule: [
         { time: "7:00 PM", teams: "Aces vs Fire" },
         { time: "8:00 PM", teams: "Storm vs Strikers" },
@@ -37,7 +37,7 @@ const About: React.FC = () => {
       <Hero 
         title="About Our League" 
         subtitle="We're your live home for high-level amateur volleyball in Long Island, NY!"
-        backgroundImage="https://images.pexels.com/photos/6551104/pexels-photo-6551104.jpeg?auto=compress&cs=tinysrgb&w=1920"
+        backgroundImage="https://images.pexels.com/photos/1277213/pexels-photo-1277213.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
       />
 
       {/* League History */}
@@ -47,29 +47,22 @@ const About: React.FC = () => {
             <div className="md:w-1/2">
               <h2 className="text-3xl font-bold text-navy mb-6">Our Story</h2>
               <p className="text-gray-700 mb-4">
-                Our volleyball league started in 2020 with just a handful of teams playing in a local gym. 
-                What began as a casual meetup among friends quickly grew into something much bigger.
+              9 Years of NYVBA - this league had a unique start and , like any other project, it has developed through its struggles, growth, exposure & recoginition. 
               </p>
               <p className="text-gray-700 mb-4">
-                As word spread about our competitive yet friendly atmosphere, more players and teams 
-                wanted to join. By 2022, we had expanded to multiple divisions to accommodate 
-                different skill levels and to create more opportunities for everyone to play.
+              This league started with a lot of incomplete ideas but after 9 years we can proudly say, through immense hardwork by Sunny, Steve, Amar & ENTIRE NYVBA Team, we have reached new heights
               </p>
               <p className="text-gray-700 mb-4">
-                Today, we're proud to offer three divisions playing three nights a week. Our community 
-                continues to grow as we work to provide the best recreational volleyball experience 
-                possible.
+              This is all due to the trust & support given to us by all the Players & Sponsors. We just want to say Thank You! 
               </p>
               <p className="text-gray-700">
-                We're passionate about growing the sport of volleyball in our community and creating 
-                a space where players can improve their skills, compete at their level, and make 
-                lasting friendships.
+              Keep believing in us & we will continue to do good work that will make everyone associated with the league proud!
               </p>
             </div>
             <div className="md:w-1/2">
               <div className="rounded-lg overflow-hidden shadow-lg h-full">
                 <img 
-                  src="https://images.pexels.com/photos/6551175/pexels-photo-6551175.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750" 
+                  src="https://images.pexels.com/photos/6203510/pexels-photo-6203510.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=10" 
                   alt="Volleyball match in our league" 
                   className="w-full h-full object-cover"
                 />
@@ -85,7 +78,6 @@ const About: React.FC = () => {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-navy mb-4">Our Divisions & Schedule</h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              We offer three competitive divisions to match your skill level
             </p>
           </div>
 
@@ -107,7 +99,7 @@ const About: React.FC = () => {
                   <h3 className="text-xl font-bold text-navy mb-2">{division.name}</h3>
                   <div className="flex items-center text-sm text-gray-500 mb-4">
                     <Calendar size={16} className="mr-2" />
-                    <span>{key === 'mens-a' ? 'Monday' : key === 'mens-b' ? 'Wednesday' : 'Friday'} Nights</span>
+                    <span>{key === 'mens-a' ? 'Wednesday' : key === 'mens-b' ? 'Tuesday' : 'Wednesday'} Nights</span>
                   </div>
                   
                   {selectedDivision === key && (
@@ -135,49 +127,6 @@ const About: React.FC = () => {
         </div>
       </section>
 
-      {/* League Values */}
-      <section className="py-16 bg-navy">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-white mb-4">Our Values</h2>
-            <p className="text-lg text-white opacity-90 max-w-2xl mx-auto">
-              What drives our league and community
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-black bg-opacity-50 rounded-lg p-6">
-              <div className="text-orange mb-4">
-                <Award size={40} />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-3">Sportsmanship</h3>
-              <p className="text-white opacity-90">
-                We believe in fair play, respect for officials and opponents, and maintaining a positive atmosphere regardless of the score.
-              </p>
-            </div>
-
-            <div className="bg-black bg-opacity-50 rounded-lg p-6">
-              <div className="text-orange mb-4">
-                <Award size={40} />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-3">Community</h3>
-              <p className="text-white opacity-90">
-                Our league is more than just volleyball—it's about building lasting relationships and supporting each other both on and off the court.
-              </p>
-            </div>
-
-            <div className="bg-black bg-opacity-50 rounded-lg p-6">
-              <div className="text-orange mb-4">
-                <Award size={40} />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-3">Growth</h3>
-              <p className="text-white opacity-90">
-                We're committed to helping players develop their skills, teams improve their tactics, and our league expand to welcome more volleyball enthusiasts.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
     </div>
   );
 };
