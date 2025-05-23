@@ -1,7 +1,6 @@
 import React from 'react';
 import Hero from '../components/Hero';
 import SponsorCard from '../components/SponsorCard';
-import MediaCard from '../components/MediaCard';
 import LiveStream from '../components/LiveStream';
 import { Link } from '../components/Link';
 import { Trophy, Calendar, ArrowRight } from 'lucide-react';
@@ -161,7 +160,7 @@ const Home: React.FC = () => {
       </section>
       
       {/* Featured Sponsors */}
-      <section className="py-16 bg-orange">
+      <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-black mb-4">Our Sponsors</h2>
@@ -182,33 +181,6 @@ const Home: React.FC = () => {
               className="text-black inline-flex items-center font-semibold"
             >
               View all our sponsors <ArrowRight size={16} className="ml-1" />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Media Highlights */}
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-black mb-4">Media Highlights</h2>
-            <p className="text-lg text-black max-w-2xl mx-auto">
-              Check out the latest photos and videos from our matches
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {featuredMedia.map((media, index) => (
-              <MediaCard key={index} {...media} />
-            ))}
-          </div>
-
-          <div className="text-center mt-10">
-            <Link 
-              href="/media" 
-              className="inline-flex items-center text-orange hover:text-orange-600 font-semibold"
-            >
-              Explore our media gallery <ArrowRight size={16} className="ml-1" />
             </Link>
           </div>
         </div>

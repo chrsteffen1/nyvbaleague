@@ -9,7 +9,7 @@ interface SponsorProps {
 
 const SponsorCard: React.FC<SponsorProps> = ({ name, logo, description, website }) => {
   return (
-    <div className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
+    <div className="bg-orange rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
       <div className="p-6">
         <div className="w-full h-40 flex items-center justify-center mb-4 bg-gray-50 rounded-lg p-4">
           <img 

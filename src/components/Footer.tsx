@@ -16,7 +16,7 @@ const Footer: React.FC = () => {
             </p>
             <div className="flex space-x-4">
               <Link 
-                href="insert(Instagram URL)here" 
+                href="https://www.instagram.com/nyvbaleague/" 
                 className="hover:text-orange transition-colors"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -24,20 +24,12 @@ const Footer: React.FC = () => {
                 <Instagram size={24} />
               </Link>
               <Link 
-                href="insert(YouTube URL)here" 
+                href="https://www.youtube.com/@nyvbaleague" 
                 className="hover:text-orange transition-colors"
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 <Youtube size={24} />
-              </Link>
-              <Link 
-                href="insert(Facebook URL)here" 
-                className="hover:text-orange transition-colors"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Facebook size={24} />
               </Link>
             </div>
           </div>
@@ -53,9 +45,6 @@ const Footer: React.FC = () => {
               </li>
               <li>
                 <Link href="/sponsors" className="hover:text-orange transition-colors">Sponsors</Link>
-              </li>
-              <li>
-                <Link href="/media" className="hover:text-orange transition-colors">Media</Link>
               </li>
               <li>
                 <Link href="/social" className="hover:text-orange transition-colors">Social & Live Streams</Link>

@@ -6,10 +6,9 @@ interface SocialPostProps {
   preview: string;
   link: string;
   title: string;
-  date: string;
 }
 
-const SocialPost: React.FC<SocialPostProps> = ({ platform, preview, link, title, date }) => {
+const SocialPost: React.FC<SocialPostProps> = ({ platform, preview, link, title }) => {
   return (
     <a 
       href={link} 
@@ -43,7 +42,6 @@ const SocialPost: React.FC<SocialPostProps> = ({ platform, preview, link, title,
         </div>
       </div>
       <div className="p-4">
-        <div className="text-xs text-gray-500 mb-1">{date}</div>
         <h3 className="text-md font-semibold text-navy line-clamp-2">{title}</h3>
       </div>
     </a>

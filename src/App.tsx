@@ -4,7 +4,6 @@ import Footer from './components/Footer';
 import Home from './pages/Home';
 import About from './pages/About';
 import Sponsors from './pages/Sponsors';
-import Media from './pages/Media';
 import Social from './pages/Social';
 import Contact from './pages/Contact';
 import Scores from './pages/Scores';
@@ -29,7 +28,6 @@ function App() {
       '/': 'VolleyLeague - Home',
       '/about': 'About Our League',
       '/sponsors': 'Our Sponsors',
-      '/media': 'Media Gallery',
       '/social': 'Social & Live Streams',
       '/contact': 'Contact Us',
       '/scores': 'Scores & Statistics',
@@ -47,8 +45,6 @@ function App() {
         return <About />;
       case '/sponsors':
         return <Sponsors />;
-      case '/media':
-        return <Media />;
       case '/social':
         return <Social />;
       case '/contact':
