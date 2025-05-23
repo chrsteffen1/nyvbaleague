@@ -63,7 +63,7 @@ const Home: React.FC = () => {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-navy mb-4">Our Divisions</h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              We offer competitive play across three exciting divisions
+            🏐 NYVBA (New York Volleyball Association) hosts three competitive indoor leagues:
             </p>
           </div>
 
@@ -73,25 +73,9 @@ const Home: React.FC = () => {
                 <Trophy size={64} />
               </div>
               <div className="p-6">
-                <h3 className="text-xl font-bold text-navy mb-2">Men's A Division</h3>
+                <h3 className="text-xl font-bold text-navy mb-2">Men's A League</h3>
                 <p className="text-gray-600 mb-4">
-                  Our highest level of men's competition. These players showcase advanced skills, strategy, and athleticism.
-                </p>
-                <div className="flex items-center text-sm text-gray-500">
-                  <Calendar size={16} className="mr-2" />
-                  <span>Monday Nights</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg shadow-md overflow-hidden transform transition-transform hover:scale-105">
-              <div className="h-48 bg-blue-700 text-white flex items-center justify-center">
-                <Trophy size={64} />
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-navy mb-2">Men's B Division</h3>
-                <p className="text-gray-600 mb-4">
-                  Competitive play with a focus on development. Perfect for intermediate players looking to improve.
+                Premier level play, now in its 16th season.
                 </p>
                 <div className="flex items-center text-sm text-gray-500">
                   <Calendar size={16} className="mr-2" />
@@ -101,17 +85,33 @@ const Home: React.FC = () => {
             </div>
 
             <div className="bg-white rounded-lg shadow-md overflow-hidden transform transition-transform hover:scale-105">
+              <div className="h-48 bg-blue-700 text-white flex items-center justify-center">
+                <Trophy size={64} />
+              </div>
+              <div className="p-6">
+                <h3 className="text-xl font-bold text-navy mb-2">Men's B League</h3>
+                <p className="text-gray-600 mb-4">
+                Competitive yet accessible, running strong for 6 season.
+                </p>
+                <div className="flex items-center text-sm text-gray-500">
+                  <Calendar size={16} className="mr-2" />
+                  <span>Tuesday Nights</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg shadow-md overflow-hidden transform transition-transform hover:scale-105">
               <div className="h-48 bg-pink-600 text-white flex items-center justify-center">
                 <Trophy size={64} />
               </div>
               <div className="p-6">
-                <h3 className="text-xl font-bold text-navy mb-2">Women's A Division</h3>
+                <h3 className="text-xl font-bold text-navy mb-2">Women's League</h3>
                 <p className="text-gray-600 mb-4">
-                  High-level women's volleyball featuring skilled players with exceptional teamwork and competition.
+                A fast-growing league currently in its 2nd season.
                 </p>
                 <div className="flex items-center text-sm text-gray-500">
                   <Calendar size={16} className="mr-2" />
-                  <span>Friday Nights</span>
+                  <span>Wednesday Nights</span>
                 </div>
               </div>
             </div>
@@ -134,7 +134,7 @@ const Home: React.FC = () => {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4">Watch Live</h2>
             <p className="text-lg opacity-90 max-w-2xl mx-auto">
-              Catch all the action with our live streams and recorded matches
+             Catch all the live action, including weekly matches, tournaments, and championship games — streamed straight from the court
             </p>
           </div>
 
@@ -153,7 +153,7 @@ const Home: React.FC = () => {
           <div className="text-center mt-10">
             <Link 
               href="/social" 
-              className="inline-flex items-center text-orange hover:text-orange-300 font-semibold"
+              className="inline-flex items-center text-white hover:text-orange-300 font-semibold"
             >
               View all live streams and recordings <ArrowRight size={16} className="ml-1" />
             </Link>

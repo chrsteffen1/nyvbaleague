@@ -62,10 +62,7 @@ const Footer: React.FC = () => {
               </li>
               <li>
                 <Link 
-                  href="insert(tracking app URL)here" 
-                  className="hover:text-orange transition-colors"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href="/scores" className="hover:text-orange transition-colors"
                 >
                   Stats & Scores
                 </Link>

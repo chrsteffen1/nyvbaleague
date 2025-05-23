@@ -95,7 +95,7 @@ const Social: React.FC = () => {
     <div>
       <Hero 
         title="Social & Live Streams" 
-        subtitle="Connect with our volleyball community and watch matches live"
+        subtitle="Whether you're a player, a fan, or just love volleyball, subscribe and never miss a serve, spike, or rally!"
         backgroundImage="https://images.pexels.com/photos/6551144/pexels-photo-6551144.jpeg?auto=compress&cs=tinysrgb&w=1920"
       />
 
