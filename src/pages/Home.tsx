@@ -36,14 +36,14 @@ const Home: React.FC = () => {
   const featuredMedia = [
     {
       type: "video" as const,
-      src: "https://images.pexels.com/photos/7045557/pexels-photo-7045557.jpeg?auto=compress&cs=tinysrgb&w=600",
+      src: "https://img.youtube.com/vi/Jg9ygYzDdhM/maxresdefault.jpg",
       title: "Men's A Division Finals Highlights",
       date: "June 15, 2025",
       description: "Watch the best plays from our championship match"
     },
     {
       type: "image" as const,
-      src: "https://images.pexels.com/photos/6551126/pexels-photo-6551126.jpeg?auto=compress&cs=tinysrgb&w=600",
+      src: "https://img.youtube.com/vi/PLzL-u2D690/maxresdefault.jpg",
       title: "Women's A Tournament Action",
       date: "May 28, 2025",
       description: "Photo gallery from our latest tournament"
@@ -129,7 +129,7 @@ const Home: React.FC = () => {
       </section>
 
       {/* Live Now / Upcoming Streams */}
-      <section className="py-16 bg-navy text-white">
+      <section className="py-16 bg-black text-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4">Watch Live</h2>
@@ -138,21 +138,16 @@ const Home: React.FC = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <LiveStream 
-              title="Men's A Championship Match"
-              thumbnail="https://images.pexels.com/photos/6551099/pexels-photo-6551099.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750"
-              streamUrl="insert(YouTube live stream URL)here"
-              isLive={true}
-            />
-            <LiveStream 
-              title="Women's A Division - Semifinals"
-              thumbnail="https://images.pexels.com/photos/6551175/pexels-photo-6551175.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750"
-              streamUrl="insert(YouTube stream URL)here"
-              isLive={false}
-              scheduledDate="June 28, 2025"
-              scheduledTime="7:00 PM"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-1 gap-8 inline-flex items-center text-orange hover:text-orange-300 font-semibold justify-items-center">
+            <div style={{ width: '80%' }}>
+              <LiveStream 
+                title="Men's A Championship Match"
+                thumbnail="https://img.youtube.com/vi/lkK8YkFiPUo/maxresdefault.jpg"
+                streamUrl="https://www.youtube.com/@nyvbaleague/shorts"
+                isLive={true}
+              />
+            </div>
+            
           </div>
 
           <div className="text-center mt-10">
