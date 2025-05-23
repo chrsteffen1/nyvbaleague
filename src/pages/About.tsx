@@ -1,22 +1,36 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Hero from '../components/Hero';
 import { Check, Calendar, MapPin, Trophy, Award } from 'lucide-react';
 
 const About: React.FC = () => {
-  const teams = [
-    { name: "Spikers", division: "Men's A" },
-    { name: "Blockers", division: "Men's A" },
-    { name: "Phoenix", division: "Men's A" },
-    { name: "Thunder", division: "Men's A" },
-    { name: "Setters", division: "Men's B" },
-    { name: "Diggers", division: "Men's B" },
-    { name: "Smashers", division: "Men's B" },
-    { name: "Lightning", division: "Men's B" },
-    { name: "Aces", division: "Women's A" },
-    { name: "Fire", division: "Women's A" },
-    { name: "Storm", division: "Women's A" },
-    { name: "Strikers", division: "Women's A" },
-  ];
+  const [selectedDivision, setSelectedDivision] = useState<string | null>(null);
+
+  const divisions = {
+    'mens-a': {
+      name: "Men's A Division",
+      schedule: [
+        { time: "7:00 PM", teams: "Spikers vs Blockers" },
+        { time: "8:00 PM", teams: "Phoenix vs Thunder" },
+      ],
+      teams: ["Spikers", "Blockers", "Phoenix", "Thunder"]
+    },
+    'mens-b': {
+      name: "Men's B Division",
+      schedule: [
+        { time: "7:00 PM", teams: "Setters vs Diggers" },
+        { time: "8:00 PM", teams: "Smashers vs Lightning" },
+      ],
+      teams: ["Setters", "Diggers", "Smashers", "Lightning"]
+    },
+    'womens-a': {
+      name: "Women's A Division",
+      schedule: [
+        { time: "7:00 PM", teams: "Aces vs Fire" },
+        { time: "8:00 PM", teams: "Storm vs Strikers" },
+      ],
+      teams: ["Aces", "Fire", "Storm", "Strikers"]
+    }
+  };
 
   return (
     <div>
@@ -76,126 +90,45 @@ const About: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold text-navy">Men's A Division</h3>
-                <Trophy className="text-blue-900" size={24} />
-              </div>
-              <p className="text-gray-700 mb-4">
-                Our highest level of men's competition featuring advanced skills and strategy.
-              </p>
-              <div className="border-t border-gray-200 pt-4 mb-4">
-                <div className="flex items-center mb-2">
-                  <Calendar size={18} className="mr-2 text-orange" />
-                  <span className="text-gray-700 font-medium">Monday Nights</span>
+            {Object.entries(divisions).map(([key, division]) => (
+              <div 
+                key={key}
+                className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transform transition-all duration-300 hover:scale-105"
+                onClick={() => setSelectedDivision(selectedDivision === key ? null : key)}
+              >
+                <div className={`h-48 ${
+                  key === 'mens-a' ? 'bg-blue-900' : 
+                  key === 'mens-b' ? 'bg-blue-700' : 
+                  'bg-pink-600'
+                } text-white flex items-center justify-center`}>
+                  <Trophy size={64} />
                 </div>
-                <div className="flex items-center">
-                  <MapPin size={18} className="mr-2 text-orange" />
-                  <span className="text-gray-700">insert(location)here</span>
+                <div className="p-6">
+                  <h3 className="text-xl font-bold text-navy mb-2">{division.name}</h3>
+                  <div className="flex items-center text-sm text-gray-500 mb-4">
+                    <Calendar size={16} className="mr-2" />
+                    <span>{key === 'mens-a' ? 'Monday' : key === 'mens-b' ? 'Wednesday' : 'Friday'} Nights</span>
+                  </div>
+                  
+                  {selectedDivision === key && (
+                    <div className="mt-4 border-t pt-4">
+                      <h4 className="font-semibold mb-2">Weekly Schedule:</h4>
+                      {division.schedule.map((slot, index) => (
+                        <div key={index} className="mb-2 text-gray-600">
+                          <span className="font-medium">{slot.time}</span> - {slot.teams}
+                        </div>
+                      ))}
+                      <h4 className="font-semibold mt-4 mb-2">Teams:</h4>
+                      <div className="grid grid-cols-2 gap-2">
+                        {division.teams.map((team, index) => (
+                          <div key={index} className="bg-gray-50 p-2 rounded text-center text-sm">
+                            {team}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-              <ul className="space-y-2">
-                <li className="flex items-start">
-                  <Check size={18} className="mr-2 text-green-500 flex-shrink-0 mt-1" />
-                  <span className="text-gray-700">Match officials for all games</span>
-                </li>
-                <li className="flex items-start">
-                  <Check size={18} className="mr-2 text-green-500 flex-shrink-0 mt-1" />
-                  <span className="text-gray-700">Season playoffs and championships</span>
-                </li>
-                <li className="flex items-start">
-                  <Check size={18} className="mr-2 text-green-500 flex-shrink-0 mt-1" />
-                  <span className="text-gray-700">Live streaming of select matches</span>
-                </li>
-              </ul>
-            </div>
-
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold text-navy">Men's B Division</h3>
-                <Trophy className="text-blue-700" size={24} />
-              </div>
-              <p className="text-gray-700 mb-4">
-                Competitive play with a focus on skill development and improvement.
-              </p>
-              <div className="border-t border-gray-200 pt-4 mb-4">
-                <div className="flex items-center mb-2">
-                  <Calendar size={18} className="mr-2 text-orange" />
-                  <span className="text-gray-700 font-medium">Wednesday Nights</span>
-                </div>
-                <div className="flex items-center">
-                  <MapPin size={18} className="mr-2 text-orange" />
-                  <span className="text-gray-700">insert(location)here</span>
-                </div>
-              </div>
-              <ul className="space-y-2">
-                <li className="flex items-start">
-                  <Check size={18} className="mr-2 text-green-500 flex-shrink-0 mt-1" />
-                  <span className="text-gray-700">Rotating officiating responsibilities</span>
-                </li>
-                <li className="flex items-start">
-                  <Check size={18} className="mr-2 text-green-500 flex-shrink-0 mt-1" />
-                  <span className="text-gray-700">Season playoffs and championships</span>
-                </li>
-                <li className="flex items-start">
-                  <Check size={18} className="mr-2 text-green-500 flex-shrink-0 mt-1" />
-                  <span className="text-gray-700">Skill development opportunities</span>
-                </li>
-              </ul>
-            </div>
-
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold text-navy">Women's A Division</h3>
-                <Trophy className="text-pink-600" size={24} />
-              </div>
-              <p className="text-gray-700 mb-4">
-                High-level women's volleyball featuring skilled players and competitive matches.
-              </p>
-              <div className="border-t border-gray-200 pt-4 mb-4">
-                <div className="flex items-center mb-2">
-                  <Calendar size={18} className="mr-2 text-orange" />
-                  <span className="text-gray-700 font-medium">Friday Nights</span>
-                </div>
-                <div className="flex items-center">
-                  <MapPin size={18} className="mr-2 text-orange" />
-                  <span className="text-gray-700">insert(location)here</span>
-                </div>
-              </div>
-              <ul className="space-y-2">
-                <li className="flex items-start">
-                  <Check size={18} className="mr-2 text-green-500 flex-shrink-0 mt-1" />
-                  <span className="text-gray-700">Match officials for all games</span>
-                </li>
-                <li className="flex items-start">
-                  <Check size={18} className="mr-2 text-green-500 flex-shrink-0 mt-1" />
-                  <span className="text-gray-700">Season playoffs and championships</span>
-                </li>
-                <li className="flex items-start">
-                  <Check size={18} className="mr-2 text-green-500 flex-shrink-0 mt-1" />
-                  <span className="text-gray-700">Live streaming of select matches</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Teams */}
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-navy mb-4">Our Teams</h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Meet the competitive teams that make up our volleyball community
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {teams.map((team, index) => (
-              <div key={index} className="bg-gray-50 rounded-lg p-4 text-center">
-                <h3 className="font-bold text-navy mb-1">{team.name}</h3>
-                <p className="text-sm text-gray-600">{team.division}</p>
               </div>
             ))}
           </div>
@@ -203,42 +136,42 @@ const About: React.FC = () => {
       </section>
 
       {/* League Values */}
-      <section className="py-16 bg-navy text-white">
+      <section className="py-16 bg-navy">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Our Values</h2>
-            <p className="text-lg opacity-90 max-w-2xl mx-auto">
+            <h2 className="text-3xl font-bold text-white mb-4">Our Values</h2>
+            <p className="text-lg text-white opacity-90 max-w-2xl mx-auto">
               What drives our league and community
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white bg-opacity-10 rounded-lg p-6 backdrop-blur-sm">
+            <div className="bg-black bg-opacity-50 rounded-lg p-6">
               <div className="text-orange mb-4">
                 <Award size={40} />
               </div>
-              <h3 className="text-xl font-bold mb-3">Sportsmanship</h3>
-              <p className="opacity-90">
+              <h3 className="text-xl font-bold text-white mb-3">Sportsmanship</h3>
+              <p className="text-white opacity-90">
                 We believe in fair play, respect for officials and opponents, and maintaining a positive atmosphere regardless of the score.
               </p>
             </div>
 
-            <div className="bg-white bg-opacity-10 rounded-lg p-6 backdrop-blur-sm">
+            <div className="bg-black bg-opacity-50 rounded-lg p-6">
               <div className="text-orange mb-4">
                 <Award size={40} />
               </div>
-              <h3 className="text-xl font-bold mb-3">Community</h3>
-              <p className="opacity-90">
+              <h3 className="text-xl font-bold text-white mb-3">Community</h3>
+              <p className="text-white opacity-90">
                 Our league is more than just volleyball—it's about building lasting relationships and supporting each other both on and off the court.
               </p>
             </div>
 
-            <div className="bg-white bg-opacity-10 rounded-lg p-6 backdrop-blur-sm">
+            <div className="bg-black bg-opacity-50 rounded-lg p-6">
               <div className="text-orange mb-4">
                 <Award size={40} />
               </div>
-              <h3 className="text-xl font-bold mb-3">Growth</h3>
-              <p className="opacity-90">
+              <h3 className="text-xl font-bold text-white mb-3">Growth</h3>
+              <p className="text-white opacity-90">
                 We're committed to helping players develop their skills, teams improve their tactics, and our league expand to welcome more volleyball enthusiasts.
               </p>
             </div>
