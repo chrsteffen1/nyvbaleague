@@ -162,11 +162,11 @@ const Home: React.FC = () => {
       </section>
       
       {/* Featured Sponsors */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-orange">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-navy mb-4">Our Sponsors</h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <h2 className="text-3xl font-bold text-black mb-4">Our Sponsors</h2>
+            <p className="text-lg text-black max-w-2xl mx-auto">
               These amazing partners help make our league possible
             </p>
           </div>
@@ -180,7 +180,7 @@ const Home: React.FC = () => {
           <div className="text-center mt-10">
             <Link 
               href="/sponsors" 
-              className="inline-flex items-center text-orange hover:text-orange-600 font-semibold"
+              className="text-black inline-flex items-center font-semibold"
             >
               View all our sponsors <ArrowRight size={16} className="ml-1" />
             </Link>
@@ -192,8 +192,8 @@ const Home: React.FC = () => {
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-navy mb-4">Media Highlights</h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <h2 className="text-3xl font-bold text-black mb-4">Media Highlights</h2>
+            <p className="text-lg text-black max-w-2xl mx-auto">
               Check out the latest photos and videos from our matches
             </p>
           </div>

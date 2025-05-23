@@ -36,7 +36,7 @@ const About: React.FC = () => {
     <div>
       <Hero 
         title="About Our League" 
-        subtitle="Building a community of volleyball enthusiasts since 2020"
+        subtitle="We're your live home for high-level amateur volleyball in Long Island, NY!"
         backgroundImage="https://images.pexels.com/photos/6551104/pexels-photo-6551104.jpeg?auto=compress&cs=tinysrgb&w=1920"
       />
 
