@@ -31,7 +31,7 @@ const Navbar: React.FC = () => {
         <div className="flex justify-between items-center">
           <div className="flex items-center">
             <Link href="/" className="text-2xl font-bold text-white flex items-center">
-              <span className="text-orange mr-1">V</span>olley<span className="text-orange">League</span>
+              <span className="text-orange mr-1">NYVBA</span><span className="text-white">League</span>
             </Link>
           </div>
 

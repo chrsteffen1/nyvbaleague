@@ -146,8 +146,7 @@ const Home: React.FC = () => {
                 streamUrl="https://www.youtube.com/@nyvbaleague/shorts"
                 isLive={true}
               />
-            </div>
-            
+            </div>            
           </div>
 
           <div className="text-center mt-10">
