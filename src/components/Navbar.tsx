@@ -43,6 +43,7 @@ const Navbar: React.FC = () => {
             <Link href="/media" className="text-white hover:text-orange transition-colors">Media</Link>
             <Link href="/social" className="text-white hover:text-orange transition-colors">Social</Link>
             <Link href="/scores" className="text-white hover:text-orange transition-colors">Scores</Link>
+            <Link href="/awards" className="text-white hover:text-orange transition-colors">Awards</Link>
           </nav>
 
           {/* Mobile Navigation Toggle */}
@@ -64,6 +65,7 @@ const Navbar: React.FC = () => {
               <Link href="/media" className="text-white hover:text-orange transition-colors">Media</Link>
               <Link href="/social" className="text-white hover:text-orange transition-colors">Social</Link>
               <Link href="/scores" className="text-white hover:text-orange transition-colors">Scores</Link>
+              <Link href="/awards" className="text-white hover:text-orange transition-colors">Awards</Link>
             </div>
           </div>
         )}

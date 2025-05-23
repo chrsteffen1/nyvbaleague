@@ -8,6 +8,7 @@ import Media from './pages/Media';
 import Social from './pages/Social';
 import Contact from './pages/Contact';
 import Scores from './pages/Scores';
+import Awards from './pages/Awards';
 
 function App() {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
@@ -17,16 +18,13 @@ function App() {
       setCurrentPath(event.detail.path);
     };
 
-    // Listen for our custom route change event
     window.addEventListener('routechange', handleRouteChange as EventListener);
 
-    // Clean up
     return () => {
       window.removeEventListener('routechange', handleRouteChange as EventListener);
     };
   }, []);
 
-  // Update page title based on current path
   useEffect(() => {
     const pathTitles: Record<string, string> = {
       '/': 'VolleyLeague - Home',
@@ -35,13 +33,13 @@ function App() {
       '/media': 'Media Gallery',
       '/social': 'Social & Live Streams',
       '/contact': 'Contact Us',
-      '/scores': 'Scores',
+      '/scores': 'Scores & Statistics',
+      '/awards': 'Player Awards',
     };
     
     document.title = pathTitles[currentPath] || 'VolleyLeague';
   }, [currentPath]);
 
-  // Render the appropriate page based on the current path
   const renderPage = () => {
     switch(currentPath) {
       case '/':
@@ -58,6 +56,8 @@ function App() {
         return <Contact />;
       case '/scores':
         return <Scores />;
+      case '/awards':
+        return <Awards />;
       default:
         return <Home />;
     }
