@@ -18,14 +18,14 @@ const SponsorCard: React.FC<SponsorProps> = ({ name, logo, description, website 
             className="max-w-full max-h-full object-contain"
           />
         </div>
-        <h3 className="text-xl font-bold text-navy mb-2">{name}</h3>
-        <p className="text-gray-600 mb-4">{description}</p>
+        <h3 className="text-xl font-bold text-black mb-2">{name}</h3>
+        <p className="text-black mb-4">{description}</p>
         {website && (
           <a 
             href={website}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-block bg-navy text-white px-4 py-2 rounded hover:bg-blue-900 transition-colors"
+            className="inline-block bg-black text-white px-4 py-2 rounded hover:bg-blue-900 transition-colors"
           >
             Visit Website
           </a>

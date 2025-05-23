@@ -5,16 +5,16 @@ import SponsorCard from '../components/SponsorCard';
 const Sponsors: React.FC = () => {
   const sponsors = [
     {
-      name: "SportsCo Athletic Gear",
-      logo: "https://images.pexels.com/photos/57043/pexels-photo-57043.jpeg?auto=compress&cs=tinysrgb&w=600",
-      description: "Premium volleyball equipment and athletic wear for all levels of play. Official supplier of our league's match balls.",
-      website: "https://example.com/sportsco",
+      name: "Team Logic IT",
+      logo: "https://www.teamlogicit.ca/TeamlogicIT/media/TLIT-Images/Global/TL20_email_Xlarge_loop.gif",
+      description: "Delivering a High Level of Availability and Security Anytime, Anywher.",
+      website: "https://www.teamlogicit.ca/jerichony214/About-Us",
     },
     {
-      name: "Elite Fitness Center",
-      logo: "https://images.pexels.com/photos/703016/pexels-photo-703016.jpeg?auto=compress&cs=tinysrgb&w=600",
-      description: "State-of-the-art fitness facility offering specialized training programs for volleyball players.",
-      website: "https://example.com/elitefitness",
+      name: "Forge Fitness",
+      logo: "https://cdn.solo.to/user/a/68174345ea4da8_07618806.jpg",
+      description: "We simply help you get to your goals and make them last.",
+      website: "https://www.forgefitnessny.com",
     },
     {
       name: "Hydrate Energy Drinks",

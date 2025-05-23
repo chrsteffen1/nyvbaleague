@@ -9,10 +9,10 @@ const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
             <h3 className="text-xl font-bold mb-4">
-              <span className="text-orange">V</span>olley<span className="text-orange">League</span>
+            <span className="text-orange mr-1">NYVBA</span><span className="text-white">League</span>
             </h3>
             <p className="mb-4">
-              Three nights a week of competitive volleyball across Men's A, B, and Women's A divisions.
+              Three levels of competitive volleyball across Men's A, B, and Women's divisions.
             </p>
             <div className="flex space-x-4">
               <Link 
@@ -79,7 +79,7 @@ const Footer: React.FC = () => {
         </div>
         
         <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm">
-          <p>&copy; {new Date().getFullYear()} VolleyLeague. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} NYVBALeague. All rights reserved.</p>
         </div>
       </div>
     </footer>
