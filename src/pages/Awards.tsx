@@ -81,14 +81,6 @@ const Awards: React.FC = () => {
               </div>
             </div>
 
-            <div className="mt-8 bg-gray-50 rounded-lg p-6">
-              <h3 className="text-xl font-bold text-navy mb-4">About the Player of the Match Award</h3>
-              <p className="text-gray-600">
-                After each match, one player is selected as Player of the Match based on their outstanding 
-                performance. These awards accumulate throughout the season, and the player with the most 
-                awards at the end of the season is crowned the Season MVP for their respective division.
-              </p>
-            </div>
           </div>
         </div>
       </section>
