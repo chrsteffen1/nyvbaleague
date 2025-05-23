@@ -8,7 +8,6 @@ import Media from './pages/Media';
 import Social from './pages/Social';
 import Contact from './pages/Contact';
 import Scores from './pages/Scores';
-import Awards from './pages/Awards';
 
 function App() {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
@@ -56,8 +55,6 @@ function App() {
         return <Contact />;
       case '/scores':
         return <Scores />;
-      case '/awards':
-        return <Awards />;
       default:
         return <Home />;
     }
