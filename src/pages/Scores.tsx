@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Hero from '../components/Hero';
 import leagueData from '../data/league-data.json';
+import RosterSelector from '../components/RosterSelctor';
 
 interface TeamStats {
   name: string;
@@ -174,54 +175,7 @@ const ScoresAndAwards: React.FC = () => {
         </div>
       </section>
 
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-navy mb-8">Team Rosters</h2>
-          {(Object.keys(divisionStats) as DivisionKey[]).map((division) => {
-            const teams = divisionStats[division];
-            return (
-              <div key={division} className="mb-8">
-                <h3 className="text-2xl font-bold text-navy mb-4">
-                  {division.replace('-', ' ').replace(/(^|\s)\S/g, (L) => L.toUpperCase())}
-                </h3>
-                {teams.map((team, teamIndex) => (
-                  <div key={teamIndex} className="mb-8">
-                    <h4 className="text-xl font-bold text-navy mb-4">{team.name}</h4>
-                    <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-                      <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                          <thead className="bg-gray-50">
-                            <tr>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Player Name</th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Position</th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Captain</th>
-                            </tr>
-                          </thead>
-                          <tbody className="bg-white divide-y divide-gray-200">
-                            {awardData
-                              .filter((player) => player.team === team.name)
-                              .map((player, playerIndex) => (
-                                <tr key={playerIndex} className={playerIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                    {player.playerName}
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{player.position}</td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {player.isCaptain ? 'Yes' : 'No'}
-                                  </td>
-                                </tr>
-                              ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            );
-          })}
-        </div>
-      </section>
+      <RosterSelector/>
     </div>
   );
 };
