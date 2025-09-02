@@ -13,6 +13,7 @@
       - `team_name` (text)
       - `wins` (integer)
       - `losses` (integer)
+      - `games_played` (integer, generated)
       - `points_for` (integer)
       - `points_against` (integer)
       - `updated_at` (timestamp)
@@ -47,6 +48,7 @@ CREATE TABLE IF NOT EXISTS standings (
   team_name text NOT NULL,
   wins integer DEFAULT 0,
   losses integer DEFAULT 0,
+  games_played integer GENERATED ALWAYS AS (wins + losses) STORED,
   points_for integer DEFAULT 0,
   points_against integer DEFAULT 0,
   updated_at timestamptz DEFAULT now(),

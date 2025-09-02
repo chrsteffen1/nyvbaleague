@@ -7,6 +7,7 @@ import Sponsors from './pages/Sponsors';
 import Social from './pages/Social';
 import Contact from './pages/Contact';
 import Scores from './pages/Scores';
+import Admin from './pages/Admin';
 
 function App() {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
@@ -32,6 +33,7 @@ function App() {
       '/contact': 'Contact Us',
       '/scores': 'Scores & Statistics',
       '/awards': 'Player Awards',
+      '/admin-secret-panel-2025': 'Admin Panel',
     };
     
     document.title = pathTitles[currentPath] || 'VolleyLeague';
@@ -51,6 +53,8 @@ function App() {
         return <Contact />;
       case '/scores':
         return <Scores />;
+      case '/admin-secret-panel-2025':
+        return <Admin />;
       default:
         return <Home />;
     }

@@ -1,53 +1,66 @@
 import React, { useState } from 'react';
 import Hero from '../components/Hero';
+import leagueData from '../data/league-data.json';
 
 interface TeamStats {
   name: string;
   wins: number;
   losses: number;
-  played: number;
 }
+
 interface AwardData {
   playerName: string;
   team: string;
   division: string;
   awards: number;
+  isCaptain: boolean;
+  position: string;
 }
 
+// Keys of divisions based on the JSON shape
+type DivisionKey = keyof typeof leagueData.divisionStats;
+type DivisionMap = Record<DivisionKey, TeamStats[]>;
+
+// Normalize raw JSON -> strong typed numbers
+const normalizeDivisionStats = (raw: typeof leagueData.divisionStats): DivisionMap => {
+  return Object.fromEntries(
+    Object.entries(raw).map(([division, teams]) => [
+      division,
+      (teams as any[]).map((t) => ({
+        name: String(t.name),
+        wins: Number(t.wins) || 0,
+        losses: Number(t.losses) || 0,
+      })),
+    ])
+  ) as DivisionMap;
+};
+
+const normalizeAwardData = (raw: typeof leagueData.awardData): AwardData[] => {
+  return (raw as any[]).map((p) => ({
+    playerName: String(p.playerName),
+    team: String(p.team),
+    division: String(p.division),
+    awards: Number(p.awards) || 0,
+    isCaptain: Boolean(p.isCaptain),
+    position: String(p.position ?? ''),
+  }));
+};
+
 const ScoresAndAwards: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'mens-a' | 'mens-b' | 'womens-a'>('mens-a');
+  // Normalize once; keeps UI logic identical but fixes TS errors
+  const initialDivisionStats = React.useMemo(
+    () => normalizeDivisionStats(leagueData.divisionStats),
+    []
+  );
+  const initialAwardData = React.useMemo(
+    () => normalizeAwardData(leagueData.awardData),
+    []
+  );
 
-  const divisionStats = {
-    'mens-a': [
-      { name: "Spikers", wins: 8, losses: 2, played: 10 },
-      { name: "Blockers", wins: 7, losses: 3, played: 10 },
-      { name: "Phoenix", wins: 5, losses: 5, played: 10 },
-      { name: "Thunder", wins: 4, losses: 6, played: 10 },
-    ],
-    'mens-b': [
-      { name: "Curricane 🏆", wins: 39, losses: 21, played: 60 },
-      { name: "Fisherman 🥈", wins: 33, losses: 27, played: 60 },
-      { name: "Team CBD_LI_NY 🥉", wins: 31, losses: 29, played: 60 },
-      { name: "Veni Volli Vici", wins: 29, losses: 31, played: 60 },
-    ],
-    'womens-a': [
-      { name: "Aces", wins: 9, losses: 1, played: 10 },
-      { name: "Fire", wins: 6, losses: 4, played: 10 },
-      { name: "Storm", wins: 5, losses: 5, played: 10 },
-      { name: "Strikers", wins: 4, losses: 6, played: 10 },
-    ],
-  };
-
-  // Sample award data - replace with actual data from your database
-  const awardData: AwardData[] = [
-    { playerName: "John Smith", team: "Spikers", division: "Men's A", awards: 5 },
-    { playerName: "Sarah Johnson", team: "Phoenix", division: "Women's A", awards: 4 },
-    { playerName: "Mike Brown", team: "Thunder", division: "Men's A", awards: 3 },
-    { playerName: "Emily Davis", team: "Storm", division: "Women's A", awards: 3 },
-    { playerName: "Chris Wilson", team: "Setters", division: "Men's B", awards: 3 },
-    { playerName: "Lisa Anderson", team: "Fire", division: "Women's A", awards: 2 },
-  ];
-
+  const [activeTab, setActiveTab] = useState<DivisionKey>('mens-a');
+  const [activeAwardTab, setActiveAwardTab] = useState<DivisionKey>('mens-a');
+  const [divisionStats, setDivisionStats] = useState<DivisionMap>(initialDivisionStats);
+  const [awardData, setAwardData] = useState<AwardData[]>(initialAwardData);
 
   return (
     <div>
@@ -63,30 +76,17 @@ const ScoresAndAwards: React.FC = () => {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between">
               <h2 className="text-3xl font-bold text-navy mb-4 md:mb-0">League Standings</h2>
               <div className="inline-flex bg-white shadow rounded-lg">
-                <button 
-                  className={`px-4 py-2 rounded-l-lg text-sm font-medium ${
-                    activeTab === 'mens-a' ? 'bg-orange text-white' : 'text-gray-700 hover:text-orange'
-                  }`}
-                  onClick={() => setActiveTab('mens-a')}
-                >
-                  Men's A
-                </button>
-                <button 
-                  className={`px-4 py-2 text-sm font-medium ${
-                    activeTab === 'mens-b' ? 'bg-orange text-white' : 'text-gray-700 hover:text-orange'
-                  }`}
-                  onClick={() => setActiveTab('mens-b')}
-                >
-                  Men's B
-                </button>
-                <button 
-                  className={`px-4 py-2 rounded-r-lg text-sm font-medium ${
-                    activeTab === 'womens-a' ? 'bg-orange text-white' : 'text-gray-700 hover:text-orange'
-                  }`}
-                  onClick={() => setActiveTab('womens-a')}
-                >
-                  Women's A
-                </button>
+                {(Object.keys(divisionStats) as DivisionKey[]).map((division) => (
+                  <button
+                    key={division}
+                    className={`px-4 py-2 text-sm font-medium ${
+                      activeTab === division ? 'bg-orange text-white' : 'text-gray-700 hover:text-orange'
+                    }`}
+                    onClick={() => setActiveTab(division)}
+                  >
+                    {division.replace('-', ' ').replace(/(^|\s)\S/g, (L) => L.toUpperCase())}
+                  </button>
+                ))}
               </div>
             </div>
           </div>
@@ -96,101 +96,130 @@ const ScoresAndAwards: React.FC = () => {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Team
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Wins
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Losses
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Played
-                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Team</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Wins</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Losses</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Played</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {divisionStats[activeTab]
+                  {[...divisionStats[activeTab]]
                     .sort((a, b) => b.wins - a.wins)
                     .map((team, index) => (
                       <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {team.name}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {team.wins}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {team.losses}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {team.played}
-                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{team.name}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{team.wins}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{team.losses}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{team.wins + team.losses}</td>
                       </tr>
                     ))}
                 </tbody>
               </table>
             </div>
           </div>
-
         </div>
       </section>
+
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
           <div className="max-w-5xl mx-auto">
-            <h2 className="text-3xl font-bold text-navy mb-8">Player of the Match Leaders</h2>
-            
+            <div className="mb-8">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+                <h2 className="text-3xl font-bold text-navy mb-4 md:mb-0">Player of the Match Leaders</h2>
+                <div className="inline-flex bg-white shadow rounded-lg">
+                  {(Object.keys(divisionStats) as DivisionKey[]).map((division) => (
+                    <button
+                      key={division}
+                      className={`px-4 py-2 text-sm font-medium ${
+                        activeAwardTab === division ? 'bg-orange text-white' : 'text-gray-700 hover:text-orange'
+                      }`}
+                      onClick={() => setActiveAwardTab(division)}
+                    >
+                      {division.replace('-', ' ').replace(/(^|\s)\S/g, (L) => L.toUpperCase())}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
             <div className="bg-white rounded-lg shadow-lg overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Rank
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Player Name
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Team
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Division
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Awards
-                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Player Name</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Team</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Awards</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {awardData
+                      .filter((player) => player.division === activeAwardTab)
                       .sort((a, b) => b.awards - a.awards)
+                      .slice(0, 3)
                       .map((player, index) => (
                         <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {index + 1}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {player.playerName}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {player.team}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {player.division}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {player.awards}
-                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{index + 1}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{player.playerName}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{player.team}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{player.awards}</td>
                         </tr>
                       ))}
                   </tbody>
                 </table>
               </div>
             </div>
-
           </div>
+        </div>
+      </section>
+
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-navy mb-8">Team Rosters</h2>
+          {(Object.keys(divisionStats) as DivisionKey[]).map((division) => {
+            const teams = divisionStats[division];
+            return (
+              <div key={division} className="mb-8">
+                <h3 className="text-2xl font-bold text-navy mb-4">
+                  {division.replace('-', ' ').replace(/(^|\s)\S/g, (L) => L.toUpperCase())}
+                </h3>
+                {teams.map((team, teamIndex) => (
+                  <div key={teamIndex} className="mb-8">
+                    <h4 className="text-xl font-bold text-navy mb-4">{team.name}</h4>
+                    <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-200">
+                          <thead className="bg-gray-50">
+                            <tr>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Player Name</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Position</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Captain</th>
+                            </tr>
+                          </thead>
+                          <tbody className="bg-white divide-y divide-gray-200">
+                            {awardData
+                              .filter((player) => player.team === team.name)
+                              .map((player, playerIndex) => (
+                                <tr key={playerIndex} className={playerIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    {player.playerName}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{player.position}</td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {player.isCaptain ? 'Yes' : 'No'}
+                                  </td>
+                                </tr>
+                              ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            );
+          })}
         </div>
       </section>
     </div>
