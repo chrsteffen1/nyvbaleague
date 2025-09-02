@@ -142,7 +142,7 @@
       "playerName": "Mankirat",
       "team": "Tarun",
       "division": "mens-a",
-      "awards": 0,
+      "awards": "0",
       "isCaptain": false,
       "position": "MB"
     },
@@ -166,7 +166,7 @@
       "playerName": "Mike Higgins",
       "team": "Dylan S",
       "division": "mens-a",
-      "awards": 0,
+      "awards": "-1",
       "isCaptain": false,
       "position": "MB"
     },
