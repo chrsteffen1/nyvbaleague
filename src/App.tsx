@@ -7,7 +7,7 @@ import Sponsors from './pages/Sponsors';
 import Social from './pages/Social';
 import Contact from './pages/Contact';
 import Scores from './pages/Scores';
-import AdminPanel from './pages/AdminPanel';
+import AdminPanel from './pages/Admin';
 
 function App() {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
