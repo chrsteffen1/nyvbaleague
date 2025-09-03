@@ -147,3 +147,4 @@ dist/
 
 # esbuild cache
 .esbuild
+.env.seeding
