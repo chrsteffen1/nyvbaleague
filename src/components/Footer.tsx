@@ -58,7 +58,8 @@ const Footer: React.FC = () => {
               </li>
             </ul>
           </div>
-          
+
+          {/*
           <div>
             <h3 className="text-xl font-bold mb-4">Contact Us</h3>
             <ul className="space-y-2">
@@ -76,8 +77,9 @@ const Footer: React.FC = () => {
               </li>
             </ul>
           </div>
+          */}
         </div>
-        
+
         <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm">
           <p>&copy; {new Date().getFullYear()} NYVBALeague. All rights reserved.</p>
         </div>
