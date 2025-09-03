@@ -7,7 +7,7 @@ import Sponsors from './pages/Sponsors';
 import Social from './pages/Social';
 import Contact from './pages/Contact';
 import Scores from './pages/Scores';
-import Admin from './pages/Admin';
+import AdminPanel from './pages/AdminPanel';
 
 function App() {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
@@ -54,7 +54,7 @@ function App() {
       case '/scores':
         return <Scores />;
       case '/admin-secret-panel-2025':
-        return <Admin />;
+        return <AdminPanel />;
       default:
         return <Home />;
     }
