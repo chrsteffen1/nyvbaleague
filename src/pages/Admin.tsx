@@ -14,7 +14,7 @@ type PlayerRow = {
   position: 'OH' | 'MB' | 'S' | 'RS';
 };
 
-// --- UI model (keep your rendering intact) ---
+// --- UI model ---
 type Team = { id: string; name: string; wins: number; losses: number };
 type DivisionStats = Record<string, Team[]>;
 type Player = {
@@ -34,8 +34,12 @@ const Admin: React.FC = () => {
   const [dbPlayers, setDbPlayers] = useState<PlayerRow[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Single selector controlling Player Management
+  // Player Management selectors
   const [selectedDivision, setSelectedDivision] = useState<string>('');
+  const [selectedTeam, setSelectedTeam] = useState<string>(''); // '' = All, '__none__' = No Team
+
+  // Draft names so we only persist & resort on blur
+  const [nameDrafts, setNameDrafts] = useState<Record<string, string>>({});
 
   // UI feedback
   const [msg, setMsg] = useState<{ type: 'error' | 'success' | 'info'; text: string } | null>(null);
@@ -52,7 +56,7 @@ const Admin: React.FC = () => {
   const [newPlayerCaptain, setNewPlayerCaptain] = useState(false);
   const [newPlayerAwards, setNewPlayerAwards] = useState<number>(0);
 
-  // Fetch all data (used on mount and after writes)
+  // Fetch all data
   const fetchAll = async () => {
     const [{ data: divisions, error: e1 }, { data: teams, error: e2 }, { data: players, error: e3 }] =
       await Promise.all([
@@ -65,6 +69,7 @@ const Admin: React.FC = () => {
     setDbDivisions(divisions ?? []);
     setDbTeams(teams ?? []);
     setDbPlayers(players ?? []);
+    setNameDrafts({}); // clear drafts after refresh so sorting is stable
   };
 
   // Initial load
@@ -87,6 +92,12 @@ const Admin: React.FC = () => {
       setSelectedDivision(dbDivisions[0].name);
     }
   }, [dbDivisions, selectedDivision]);
+
+  // Reset team filter & drafts when switching division
+  useEffect(() => {
+    setSelectedTeam('');
+    setNameDrafts({});
+  }, [selectedDivision]);
 
   // Build UI data
   const data: LeagueData = useMemo(() => {
@@ -122,22 +133,37 @@ const Admin: React.FC = () => {
     return { divisionStats, awardData };
   }, [dbDivisions, dbTeams, dbPlayers]);
 
-  // Derived (ALL hooks above any early return)
-  const playersForSelectedDivision = useMemo(
-    () => data.awardData.filter(p => p.division === selectedDivision),
-    [data.awardData, selectedDivision]
-  );
+  // Derived lists
+  const allDivisionNames = dbDivisions.map(d => d.name);
+
   const teamsForSelectedDivision = useMemo(
     () => data.divisionStats[selectedDivision]?.map(t => t.name) ?? [],
     [data.divisionStats, selectedDivision]
   );
 
-  // ---------- Render ----------
-  if (loading) return <div className="p-4">Loading…</div>;
+  // Filter players by selected division and optional team; then sort by name (empty names last).
+  const playersForSelectedDivision = useMemo(() => {
+    const filtered = data.awardData.filter(p => p.division === selectedDivision)
+      .filter(p => {
+        if (selectedTeam === '') return true;           // All teams
+        if (selectedTeam === '__none__') return !p.team; // No team
+        return p.team === selectedTeam;                 // Specific team
+      });
 
-  const allDivisionNames = dbDivisions.map(d => d.name);
-  const teamsForSelectedPlayerDivision =
-    (newPlayerDivision ? data.divisionStats[newPlayerDivision] : [])?.map(t => t.name) ?? [];
+    // Sort only by saved names (not drafts) so typing doesn't reorder rows;
+    // empty names go last.
+    return [...filtered].sort((a, b) => {
+      const an = a.playerName.trim().toLowerCase();
+      const bn = b.playerName.trim().toLowerCase();
+      const aEmpty = an.length === 0;
+      const bEmpty = bn.length === 0;
+      if (aEmpty && bEmpty) return a.id.localeCompare(b.id);
+      if (aEmpty) return 1;
+      if (bEmpty) return -1;
+      const byName = an.localeCompare(bn);
+      return byName !== 0 ? byName : a.id.localeCompare(b.id);
+    });
+  }, [data.awardData, selectedDivision, selectedTeam]);
 
   // helpers
   const findDivisionIdByName = (name: string) => dbDivisions.find(d => d.name === name)?.id ?? null;
@@ -158,7 +184,7 @@ const Admin: React.FC = () => {
     }
     note('success', `Division "${data.name}" created.`);
     setNewDivisionName('');
-    setSelectedDivision(data.name); // convenience
+    setSelectedDivision(data.name);
     setNewTeamDivision(data.name);
     setNewPlayerDivision(data.name);
     await fetchAll();
@@ -265,7 +291,7 @@ const Admin: React.FC = () => {
     } else if (field === 'position') {
       ({ error } = await supabase.from('players').update({ position: value as Player['position'] }).eq('id', playerId));
     } else if (field === 'team') {
-      // Use the currently selected division (the table is filtered by it)
+      // Use the currently selected division (this table is filtered by it)
       const teamId = value ? findTeamIdByDivisionAndName(selectedDivision, String(value)) : null;
       const divisionId = teamId
         ? dbTeams.find(t => t.id === teamId)?.division_id ?? p.division_id
@@ -306,6 +332,27 @@ const Admin: React.FC = () => {
     else note('success', 'Player removed.');
     await fetchAll();
   };
+
+  // --- Player name draft handlers (only persist & resort on blur) ---
+  const onPlayerNameChange = (playerId: string, next: string) => {
+    setNameDrafts((d) => ({ ...d, [playerId]: next }));
+  };
+  const onPlayerNameBlur = async (player: Player) => {
+    const draft = (nameDrafts[player.id] ?? '').trim();
+    if (draft !== player.playerName) {
+      await handleAwardChangeById(player.id, 'playerName', draft);
+    }
+    setNameDrafts((d) => {
+      const { [player.id]: _, ...rest } = d;
+      return rest;
+    });
+  };
+
+  // ---------- Render ----------
+  if (loading) return <div className="p-4">Loading…</div>;
+
+  const teamsForSelectedPlayerDivision =
+    (newPlayerDivision ? data.divisionStats[newPlayerDivision] : [])?.map(t => t.name) ?? [];
 
   return (
     <div className="p-4 space-y-6">
@@ -436,7 +483,7 @@ const Admin: React.FC = () => {
         </div>
       </section>
 
-      {/* Team Standings (unchanged) */}
+      {/* Team Standings */}
       {!dbDivisions.length ? (
         <div className="p-4 bg-yellow-50 border border-yellow-200 rounded">
           No divisions found. Create one above to get started.
@@ -499,12 +546,13 @@ const Admin: React.FC = () => {
         </section>
       )}
 
-      {/* Player Management — with the division selector directly above */}
+      {/* Player Management */}
       {allDivisionNames.length > 0 && (
         <section className="border rounded p-4">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-4">
             <h2 className="text-xl font-bold">Player Management</h2>
-            <div className="flex items-center gap-2">
+
+            <div className="flex flex-wrap items-center gap-2">
               <span className="text-sm text-gray-600">Division:</span>
               <select
                 value={selectedDivision}
@@ -515,6 +563,20 @@ const Admin: React.FC = () => {
                   <option key={division} value={division}>{division}</option>
                 ))}
               </select>
+
+              <span className="text-sm text-gray-600 ml-2">Team:</span>
+              <select
+                value={selectedTeam}
+                onChange={(e) => setSelectedTeam(e.target.value)}
+                className="border p-2 rounded"
+              >
+                <option value="">(All teams)</option>
+                <option value="__none__">(No team)</option>
+                {teamsForSelectedDivision.map((team) => (
+                  <option key={team} value={team}>{team}</option>
+                ))}
+              </select>
+
               <button
                 onClick={() => handleAddPlayerInline(selectedDivision)}
                 className="bg-blue-500 text-white px-3 py-2 rounded ml-4"
@@ -526,7 +588,9 @@ const Admin: React.FC = () => {
 
           {!playersForSelectedDivision.length ? (
             <div className="text-sm text-gray-500 mb-2">
-              No players in <strong>{selectedDivision}</strong> yet.
+              No players in <strong>{selectedDivision}</strong>
+              {selectedTeam === '' ? '' : selectedTeam === '__none__' ? ' without a team' : ` on ${selectedTeam}`}
+              .
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -542,68 +606,73 @@ const Admin: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {playersForSelectedDivision.map((player) => (
-                    <tr key={player.id}>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <input
-                          type="text"
-                          value={player.playerName}
-                          onChange={(e) => handleAwardChangeById(player.id, 'playerName', e.target.value)}
-                          className="border p-1 w-full rounded"
-                          placeholder="Player name"
-                        />
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <select
-                          value={teamsForSelectedDivision.includes(player.team) ? player.team : ''}
-                          onChange={(e) => handleAwardChangeById(player.id, 'team', e.target.value)}
-                          className="border p-1 w-full rounded"
-                        >
-                          <option value="">No Team</option>
-                          {teamsForSelectedDivision.map((team) => (
-                            <option key={team} value={team}>{team}</option>
-                          ))}
-                        </select>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <select
-                          value={player.position}
-                          onChange={(e) => handleAwardChangeById(player.id, 'position', e.target.value)}
-                          className="border p-1 w-full rounded"
-                        >
-                          <option value="OH">OH</option>
-                          <option value="MB">MB</option>
-                          <option value="S">S</option>
-                          <option value="RS">RS</option>
-                        </select>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <input
-                          type="checkbox"
-                          checked={player.isCaptain}
-                          onChange={(e) => handleAwardChangeById(player.id, 'isCaptain', e.target.checked)}
-                          className="border p-1"
-                        />
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <input
-                          type="number"
-                          value={player.awards}
-                          onChange={(e) => handleAwardChangeById(player.id, 'awards', e.target.value)}
-                          className="border p-1 w-20 rounded"
-                          min="0"
-                        />
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <button
-                          onClick={() => handleRemovePlayerById(player.id)}
-                          className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 transition-colors"
-                        >
-                          Remove
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                  {playersForSelectedDivision.map((player) => {
+                    const draft = nameDrafts[player.id];
+                    const effectiveName = draft ?? player.playerName;
+                    return (
+                      <tr key={player.id}>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <input
+                            type="text"
+                            value={effectiveName}
+                            onChange={(e) => onPlayerNameChange(player.id, e.target.value)}
+                            onBlur={() => onPlayerNameBlur(player)}
+                            className="border p-1 w-full rounded"
+                            placeholder="Player name"
+                          />
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <select
+                            value={teamsForSelectedDivision.includes(player.team) ? player.team : ''}
+                            onChange={(e) => handleAwardChangeById(player.id, 'team', e.target.value)}
+                            className="border p-1 w-full rounded"
+                          >
+                            <option value="">No Team</option>
+                            {teamsForSelectedDivision.map((team) => (
+                              <option key={team} value={team}>{team}</option>
+                            ))}
+                          </select>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <select
+                            value={player.position}
+                            onChange={(e) => handleAwardChangeById(player.id, 'position', e.target.value)}
+                            className="border p-1 w-full rounded"
+                          >
+                            <option value="OH">OH</option>
+                            <option value="MB">MB</option>
+                            <option value="S">S</option>
+                            <option value="RS">RS</option>
+                          </select>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                          <input
+                            type="checkbox"
+                            checked={player.isCaptain}
+                            onChange={(e) => handleAwardChangeById(player.id, 'isCaptain', e.target.checked)}
+                            className="border p-1"
+                          />
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <input
+                            type="number"
+                            value={player.awards}
+                            onChange={(e) => handleAwardChangeById(player.id, 'awards', e.target.value)}
+                            className="border p-1 w-20 rounded"
+                            min="0"
+                          />
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <button
+                            onClick={() => handleRemovePlayerById(player.id)}
+                            className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 transition-colors"
+                          >
+                            Remove
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
