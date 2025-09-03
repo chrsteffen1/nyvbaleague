@@ -1,10 +1,9 @@
 import React from 'react';
 import Hero from '../components/Hero';
-// keep your component path/name as-is if it's "RosterSelctor"
 import RosterSelector from '../components/RosterSelctor';
 import { supabase } from '../lib/supabaseClient';
 
-/** DB row types (match your Admin page) */
+/** DB row types */
 type DivisionRow = { id: string; name: string };
 type TeamRow = { id: string; division_id: string; name: string; wins: number; losses: number };
 type PlayerRow = {
@@ -17,12 +16,7 @@ type PlayerRow = {
   position: 'OH' | 'MB' | 'S' | 'RS';
 };
 
-/** UI types you already use */
-interface TeamStats {
-  name: string;
-  wins: number;
-  losses: number;
-}
+interface TeamStats { name: string; wins: number; losses: number; }
 interface AwardData {
   playerName: string;
   team: string;
@@ -31,14 +25,16 @@ interface AwardData {
   isCaptain: boolean;
   position: string;
 }
-
-/** division name -> teams[] */
 type DivisionMap = Record<string, TeamStats[]>;
 
 const pretty = (s: string) =>
   s.replace('-', ' ').replace(/(^|\s)\S/g, (L) => L.toUpperCase());
 
-const ScoresAndAwards: React.FC = () => {
+// Robust matcher: women, womens, women's, etc.
+const isWomenDivision = (name?: string) => !!name && /\bwomen'?s?\b/i.test(name);
+const motmLabelFor = (name?: string) => (isWomenDivision(name) ? 'Women of the Match' : 'Man of the Match');
+
+const Scores: React.FC = () => {
   // raw DB rows
   const [divisions, setDivisions] = React.useState<DivisionRow[]>([]);
   const [teams, setTeams] = React.useState<TeamRow[]>([]);
@@ -46,10 +42,10 @@ const ScoresAndAwards: React.FC = () => {
   const [loading, setLoading] = React.useState(true);
 
   // UI state
-  const [activeTab, setActiveTab] = React.useState<string>('');
-  const [activeAwardTab, setActiveAwardTab] = React.useState<string>('');
+  const [activeTab, setActiveTab] = React.useState<string>('');        // standings tab
+  const [activeAwardTab, setActiveAwardTab] = React.useState<string>(''); // leaders tab
 
-  // one-shot fetch + helpers
+  // fetch once
   const fetchAll = React.useCallback(async () => {
     const [{ data: d, error: e1 }, { data: t, error: e2 }, { data: p, error: e3 }] =
       await Promise.all([
@@ -57,9 +53,7 @@ const ScoresAndAwards: React.FC = () => {
         supabase.from('teams').select('*'),
         supabase.from('players').select('*'),
       ]);
-    if (e1 || e2 || e3) {
-      console.error(e1 ?? e2 ?? e3);
-    }
+    if (e1 || e2 || e3) console.error(e1 ?? e2 ?? e3);
     setDivisions(d ?? []);
     setTeams(t ?? []);
     setPlayers(p ?? []);
@@ -73,7 +67,7 @@ const ScoresAndAwards: React.FC = () => {
     })();
   }, [fetchAll]);
 
-  // keep active tabs valid whenever divisions change
+  // keep active tabs valid
   React.useEffect(() => {
     if (!divisions.length) {
       setActiveTab('');
@@ -88,7 +82,7 @@ const ScoresAndAwards: React.FC = () => {
     }
   }, [divisions, activeTab, activeAwardTab]);
 
-  // (optional) realtime refresh when rows change
+  // Optional realtime refresh
   React.useEffect(() => {
     const ch = supabase
       .channel('realtime-scores')
@@ -99,13 +93,11 @@ const ScoresAndAwards: React.FC = () => {
     return () => { supabase.removeChannel(ch); };
   }, [fetchAll]);
 
-  // ---------- Derive the shapes your UI expects ----------
+  // Derive shapes
   const divisionStats: DivisionMap = React.useMemo(() => {
     const byIdDiv = Object.fromEntries(divisions.map((d) => [d.id, d]));
     const map: DivisionMap = {};
-    // initialize each division with an empty array so tabs render
     divisions.forEach((d) => { map[d.name] = []; });
-
     teams.forEach((t) => {
       const divName = byIdDiv[t.division_id]?.name;
       if (!divName) return;
@@ -115,11 +107,7 @@ const ScoresAndAwards: React.FC = () => {
         losses: Number(t.losses) || 0,
       });
     });
-
-    // sort per division by team name for consistent display
-    Object.keys(map).forEach((k) => {
-      map[k].sort((a, b) => a.name.localeCompare(b.name));
-    });
+    Object.keys(map).forEach((k) => map[k].sort((a, b) => a.name.localeCompare(b.name)));
     return map;
   }, [divisions, teams]);
 
@@ -136,7 +124,6 @@ const ScoresAndAwards: React.FC = () => {
     }));
   }, [divisions, teams, players]);
 
-  // tabs come from division names now (not JSON keys)
   const divisionNames = divisions.map((d) => d.name);
 
   if (loading) {
@@ -220,13 +207,15 @@ const ScoresAndAwards: React.FC = () => {
         </div>
       </section>
 
-      {/* ---------- Awards ---------- */}
+      {/* ---------- Awards (dynamic label + top 5) ---------- */}
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
           <div className="max-w-5xl mx-auto">
             <div className="mb-8">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-                <h2 className="text-3xl font-bold text-navy mb-4 md:mb-0">PLayer of the Match Leaders</h2>
+                <h2 className="text-3xl font-bold text-navy mb-4 md:mb-0">
+                  {motmLabelFor(activeAwardTab)} Leaders
+                </h2>
                 <div className="inline-flex bg-white shadow rounded-lg">
                   {divisionNames.map((division) => (
                     <button
@@ -251,13 +240,15 @@ const ScoresAndAwards: React.FC = () => {
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Player Name</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Team</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Awards</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        {motmLabelFor(activeAwardTab)}
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {awardData
                       .filter((player) => player.division === activeAwardTab)
-                      .sort((a, b) => b.awards - a.awards)
+                      .sort((a, b) => b.awards - a.awards || a.playerName.localeCompare(b.playerName))
                       .slice(0, 5)
                       .map((player, index) => (
                         <tr key={`${player.playerName}-${index}`} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
@@ -283,9 +274,10 @@ const ScoresAndAwards: React.FC = () => {
         </div>
       </section>
 
+      {/* Team Rosters (separate component) */}
       <RosterSelector />
     </div>
   );
 };
 
-export default ScoresAndAwards;
+export default Scores;
