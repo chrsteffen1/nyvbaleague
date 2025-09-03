@@ -72,7 +72,7 @@ const Home: React.FC = () => {
               <div className="p-6">
                 <h3 className="text-xl font-bold text-navy mb-2">Men's A League</h3>
                 <p className="text-gray-600 mb-4">
-                Premier level play, now in its 16th season.
+                Premier level play, now in its 17th season.
                 </p>
                 <div className="flex items-center text-sm text-gray-500">
                   <Calendar size={16} className="mr-2" />
@@ -88,7 +88,7 @@ const Home: React.FC = () => {
               <div className="p-6">
                 <h3 className="text-xl font-bold text-navy mb-2">Men's B League</h3>
                 <p className="text-gray-600 mb-4">
-                Competitive yet accessible, running strong for 6 season.
+                Competitive yet accessible, running strong for 7 season.
                 </p>
                 <div className="flex items-center text-sm text-gray-500">
                   <Calendar size={16} className="mr-2" />
@@ -104,7 +104,7 @@ const Home: React.FC = () => {
               <div className="p-6">
                 <h3 className="text-xl font-bold text-navy mb-2">Women's League</h3>
                 <p className="text-gray-600 mb-4">
-                A fast-growing league currently in its 2nd season.
+                A fast-growing league currently in its 3rd season.
                 </p>
                 <div className="flex items-center text-sm text-gray-500">
                   <Calendar size={16} className="mr-2" />
