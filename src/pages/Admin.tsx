@@ -33,9 +33,10 @@ const Admin: React.FC = () => {
   const [dbTeams, setDbTeams] = useState<TeamRow[]>([]);
   const [dbPlayers, setDbPlayers] = useState<PlayerRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeDivision, setActiveDivision] = useState<string>('');
 
-  // UI state - division for viewing/editing players
+  // Division controlling roster table below
+  const [activeDivision, setActiveDivision] = useState<string>('');
+  // Division used by Player Management section (right-side table)
   const [selectedDivision, setSelectedDivision] = useState<string>('');
 
   // UI feedback
@@ -62,7 +63,6 @@ const Admin: React.FC = () => {
         supabase.from('players').select('*'),
       ]);
     if (e1 || e2 || e3) console.error(e1 ?? e2 ?? e3);
-
     setDbDivisions(divisions ?? []);
     setDbTeams(teams ?? []);
     setDbPlayers(players ?? []);
@@ -75,6 +75,7 @@ const Admin: React.FC = () => {
       await fetchAll();
       setLoading(false);
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Keep active division valid
@@ -88,13 +89,13 @@ const Admin: React.FC = () => {
     }
   }, [dbDivisions, activeDivision]);
 
-  // keep selected division valid whenever divisions change
+  // Keep selected division valid
   useEffect(() => {
     if (!dbDivisions.length) {
       setSelectedDivision('');
       return;
     }
-    if (!selectedDivision || !dbDivisions.some((x) => x.name === selectedDivision)) {
+    if (!selectedDivision || !dbDivisions.some(x => x.name === selectedDivision)) {
       setSelectedDivision(dbDivisions[0].name);
     }
   }, [dbDivisions, selectedDivision]);
@@ -133,7 +134,7 @@ const Admin: React.FC = () => {
     return { divisionStats, awardData };
   }, [dbDivisions, dbTeams, dbPlayers]);
 
-  // Derived
+  // Derived (ALL hooks live above any early return)
   const teamsForActive = useMemo(
     () => (data.divisionStats[activeDivision]?.map(t => t.name) ?? []),
     [data.divisionStats, activeDivision]
@@ -142,6 +143,21 @@ const Admin: React.FC = () => {
     () => data.awardData.filter(a => a.division === activeDivision),
     [data.awardData, activeDivision]
   );
+  const playersForSelectedDivision = useMemo(
+    () => data.awardData.filter(p => p.division === selectedDivision),
+    [data.awardData, selectedDivision]
+  );
+  const teamsForSelectedDivision = useMemo(
+    () => data.divisionStats[selectedDivision]?.map(t => t.name) ?? [],
+    [data.divisionStats, selectedDivision]
+  );
+
+  // ---------- Render ----------
+  if (loading) return <div className="p-4">Loading…</div>;
+
+  const allDivisionNames = dbDivisions.map(d => d.name);
+  const teamsForSelectedPlayerDivision =
+    (newPlayerDivision ? data.divisionStats[newPlayerDivision] : [])?.map(t => t.name) ?? [];
 
   // helpers
   const findDivisionIdByName = (name: string) => dbDivisions.find(d => d.name === name)?.id ?? null;
@@ -156,14 +172,11 @@ const Admin: React.FC = () => {
     const name = newDivisionName.trim();
     if (!name) return note('error', 'Division name is required.');
     const { data, error } = await supabase.from('divisions').insert({ name }).select('*').single();
-    if (error) {
-      note('error', `Create division failed: ${error.message}`);
-      return;
-    }
+    if (error) return note('error', `Create division failed: ${error.message}`);
     note('success', `Division "${data.name}" created.`);
     setNewDivisionName('');
     setActiveDivision(data.name);
-    setNewTeamDivision(data.name); // convenience for next form
+    setNewTeamDivision(data.name);
     setNewPlayerDivision(data.name);
     await fetchAll();
   };
@@ -176,10 +189,7 @@ const Admin: React.FC = () => {
     const division_id = findDivisionIdByName(divName);
     if (!division_id) return note('error', 'Selected division not found.');
     const { error } = await supabase.from('teams').insert({ division_id, name, wins: 0, losses: 0 });
-    if (error) {
-      note('error', `Create team failed: ${error.message}`);
-      return;
-    }
+    if (error) return note('error', `Create team failed: ${error.message}`);
     note('success', `Team "${name}" created in ${divName}.`);
     setNewTeamName('');
     await fetchAll();
@@ -202,10 +212,7 @@ const Admin: React.FC = () => {
       is_captain: !!newPlayerCaptain,
       position: newPlayerPosition,
     });
-    if (error) {
-      note('error', `Create player failed: ${error.message}`);
-      return;
-    }
+    if (error) return note('error', `Create player failed: ${error.message}`);
     note('success', `Player "${playerName}" created in ${divName}${team_id ? ` (${newPlayerTeam})` : ''}.`);
     setNewPlayerName('');
     setNewPlayerTeam('');
@@ -309,25 +316,6 @@ const Admin: React.FC = () => {
     else note('success', 'Player removed.');
     await fetchAll();
   };
-
-  // ---------- Render ----------
-  if (loading) return <div className="p-4">Loading…</div>;
-
-  const allDivisionNames = dbDivisions.map(d => d.name);
-  const teamsForSelectedPlayerDivision =
-    (newPlayerDivision ? data.divisionStats[newPlayerDivision] : [])?.map(t => t.name) ?? [];
-  
-  // Players for the selected division (for editing)
-  const playersForSelectedDivision = useMemo(
-    () => data.awardData.filter(p => p.division === selectedDivision),
-    [data.awardData, selectedDivision]
-  );
-  
-  // Teams for the selected division (for player team assignment)
-  const teamsForSelectedDivision = useMemo(
-    () => data.divisionStats[selectedDivision]?.map(t => t.name) ?? [],
-    [data.divisionStats, selectedDivision]
-  );
 
   return (
     <div className="p-4 space-y-6">
