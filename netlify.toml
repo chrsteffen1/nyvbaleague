@@ -1,0 +1,15 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# optional: explicit admin path first
+[[redirects]]
+  from = "/admin-secret-panel-2025"
+  to   = "/index.html"
+  status = 200
+
+# SPA catch-all (MUST be last)
+[[redirects]]
+  from = "/*"
+  to   = "/index.html"
+  status = 200
