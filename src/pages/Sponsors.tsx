@@ -17,16 +17,10 @@ const Sponsors: React.FC = () => {
       website: "https://www.forgefitnessny.com",
     },
     {
-      name: "Hydrate Energy Drinks",
-      logo: "https://images.pexels.com/photos/1484135/pexels-photo-1484135.jpeg?auto=compress&cs=tinysrgb&w=600",
-      description: "Refreshing energy drinks designed for athletes, providing essential hydration during intensive matches.",
-      website: "https://example.com/hydrate",
-    },
-    {
-      name: "Local Sports Bar & Grill",
-      logo: "https://images.pexels.com/photos/274349/pexels-photo-274349.jpeg?auto=compress&cs=tinysrgb&w=600",
-      description: "The best place to unwind after your matches with special discounts for league members.",
-      website: "https://example.com/sportsbar",
+      name: "Sportime",
+      logo: "https://cdn.sportimeny.com/assets/Brands6.png",
+      description: "SPORTIME Clubs — From Health to High Performance",
+      website: "https://www.sportimeny.com/",
     },
   ];
 
