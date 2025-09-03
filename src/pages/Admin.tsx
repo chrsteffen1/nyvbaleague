@@ -35,6 +35,9 @@ const Admin: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [activeDivision, setActiveDivision] = useState<string>('');
 
+  // UI state - division for viewing/editing players
+  const [selectedDivision, setSelectedDivision] = useState<string>('');
+
   // UI feedback
   const [msg, setMsg] = useState<{ type: 'error' | 'success' | 'info'; text: string } | null>(null);
   const note = (type: 'error' | 'success' | 'info', text: string) => setMsg({ type, text });
@@ -84,6 +87,17 @@ const Admin: React.FC = () => {
       setActiveDivision(dbDivisions[0].name);
     }
   }, [dbDivisions, activeDivision]);
+
+  // keep selected division valid whenever divisions change
+  useEffect(() => {
+    if (!dbDivisions.length) {
+      setSelectedDivision('');
+      return;
+    }
+    if (!selectedDivision || !dbDivisions.some((x) => x.name === selectedDivision)) {
+      setSelectedDivision(dbDivisions[0].name);
+    }
+  }, [dbDivisions, selectedDivision]);
 
   // Build UI data
   const data: LeagueData = useMemo(() => {
@@ -302,6 +316,18 @@ const Admin: React.FC = () => {
   const allDivisionNames = dbDivisions.map(d => d.name);
   const teamsForSelectedPlayerDivision =
     (newPlayerDivision ? data.divisionStats[newPlayerDivision] : [])?.map(t => t.name) ?? [];
+  
+  // Players for the selected division (for editing)
+  const playersForSelectedDivision = useMemo(
+    () => data.awardData.filter(p => p.division === selectedDivision),
+    [data.awardData, selectedDivision]
+  );
+  
+  // Teams for the selected division (for player team assignment)
+  const teamsForSelectedDivision = useMemo(
+    () => data.divisionStats[selectedDivision]?.map(t => t.name) ?? [],
+    [data.divisionStats, selectedDivision]
+  );
 
   return (
     <div className="p-4 space-y-6">
@@ -515,7 +541,7 @@ const Admin: React.FC = () => {
 
             {!awardsForDivision.length ? (
               <div className="text-sm text-gray-500 mb-2">
-                No players in <strong>{activeDivision}</strong> yet. Use “Create Player” above or “Add Blank Player”.
+                No players in <strong>{activeDivision}</strong> yet. Use "Create Player" above or "Add Blank Player".
               </div>
             ) : null}
 
@@ -597,6 +623,118 @@ const Admin: React.FC = () => {
             </div>
           </section>
         </>
+      )}
+
+      {/* Player Management Section */}
+      {allDivisionNames.length > 0 && (
+        <section className="border rounded p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold">Player Management</h2>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">Division:</span>
+              <select
+                value={selectedDivision}
+                onChange={(e) => setSelectedDivision(e.target.value)}
+                className="border p-2 rounded"
+              >
+                {allDivisionNames.map((division) => (
+                  <option key={division} value={division}>{division}</option>
+                ))}
+              </select>
+              <button
+                onClick={() => handleAddPlayerInline(selectedDivision)}
+                className="bg-blue-500 text-white px-3 py-2 rounded ml-4"
+              >
+                Add Player to {selectedDivision}
+              </button>
+            </div>
+          </div>
+
+          {!playersForSelectedDivision.length ? (
+            <div className="text-sm text-gray-500 mb-2">
+              No players in <strong>{selectedDivision}</strong> yet.
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Player Name</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Team</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Position</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Captain</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">MVP Points</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {playersForSelectedDivision.map((player) => (
+                    <tr key={player.id}>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <input
+                          type="text"
+                          value={player.playerName}
+                          onChange={(e) => handleAwardChangeById(player.id, 'playerName', e.target.value)}
+                          className="border p-1 w-full rounded"
+                          placeholder="Player name"
+                        />
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <select
+                          value={teamsForSelectedDivision.includes(player.team) ? player.team : ''}
+                          onChange={(e) => handleAwardChangeById(player.id, 'team', e.target.value)}
+                          className="border p-1 w-full rounded"
+                        >
+                          <option value="">No Team</option>
+                          {teamsForSelectedDivision.map((team) => (
+                            <option key={team} value={team}>{team}</option>
+                          ))}
+                        </select>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <select
+                          value={player.position}
+                          onChange={(e) => handleAwardChangeById(player.id, 'position', e.target.value)}
+                          className="border p-1 w-full rounded"
+                        >
+                          <option value="OH">OH</option>
+                          <option value="MB">MB</option>
+                          <option value="S">S</option>
+                          <option value="RS">RS</option>
+                        </select>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <input
+                          type="checkbox"
+                          checked={player.isCaptain}
+                          onChange={(e) => handleAwardChangeById(player.id, 'isCaptain', e.target.checked)}
+                          className="border p-1"
+                        />
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <input
+                          type="number"
+                          value={player.awards}
+                          onChange={(e) => handleAwardChangeById(player.id, 'awards', e.target.value)}
+                          className="border p-1 w-20 rounded"
+                          min="0"
+                        />
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <button
+                          onClick={() => handleRemovePlayerById(player.id)}
+                          className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 transition-colors"
+                        >
+                          Remove
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
       )}
     </div>
   );
