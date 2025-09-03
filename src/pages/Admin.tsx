@@ -34,9 +34,7 @@ const Admin: React.FC = () => {
   const [dbPlayers, setDbPlayers] = useState<PlayerRow[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Division controlling roster table below
-  const [activeDivision, setActiveDivision] = useState<string>('');
-  // Division used by Player Management section (right-side table)
+  // Single selector controlling Player Management
   const [selectedDivision, setSelectedDivision] = useState<string>('');
 
   // UI feedback
@@ -63,6 +61,7 @@ const Admin: React.FC = () => {
         supabase.from('players').select('*'),
       ]);
     if (e1 || e2 || e3) console.error(e1 ?? e2 ?? e3);
+
     setDbDivisions(divisions ?? []);
     setDbTeams(teams ?? []);
     setDbPlayers(players ?? []);
@@ -77,17 +76,6 @@ const Admin: React.FC = () => {
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // Keep active division valid
-  useEffect(() => {
-    if (!dbDivisions.length) {
-      if (activeDivision) setActiveDivision('');
-      return;
-    }
-    if (!activeDivision || !dbDivisions.some(d => d.name === activeDivision)) {
-      setActiveDivision(dbDivisions[0].name);
-    }
-  }, [dbDivisions, activeDivision]);
 
   // Keep selected division valid
   useEffect(() => {
@@ -134,15 +122,7 @@ const Admin: React.FC = () => {
     return { divisionStats, awardData };
   }, [dbDivisions, dbTeams, dbPlayers]);
 
-  // Derived (ALL hooks live above any early return)
-  const teamsForActive = useMemo(
-    () => (data.divisionStats[activeDivision]?.map(t => t.name) ?? []),
-    [data.divisionStats, activeDivision]
-  );
-  const awardsForDivision = useMemo(
-    () => data.awardData.filter(a => a.division === activeDivision),
-    [data.awardData, activeDivision]
-  );
+  // Derived (ALL hooks above any early return)
   const playersForSelectedDivision = useMemo(
     () => data.awardData.filter(p => p.division === selectedDivision),
     [data.awardData, selectedDivision]
@@ -172,31 +152,37 @@ const Admin: React.FC = () => {
     const name = newDivisionName.trim();
     if (!name) return note('error', 'Division name is required.');
     const { data, error } = await supabase.from('divisions').insert({ name }).select('*').single();
-    if (error) return note('error', `Create division failed: ${error.message}`);
+    if (error) {
+      note('error', `Create division failed: ${error.message}`);
+      return;
+    }
     note('success', `Division "${data.name}" created.`);
     setNewDivisionName('');
-    setActiveDivision(data.name);
+    setSelectedDivision(data.name); // convenience
     setNewTeamDivision(data.name);
     setNewPlayerDivision(data.name);
     await fetchAll();
   };
 
   const handleCreateTeam = async () => {
-    const divName = newTeamDivision || activeDivision;
+    const divName = newTeamDivision || selectedDivision;
     const name = newTeamName.trim();
     if (!divName) return note('error', 'Select a division for the new team.');
     if (!name) return note('error', 'Team name is required.');
     const division_id = findDivisionIdByName(divName);
     if (!division_id) return note('error', 'Selected division not found.');
     const { error } = await supabase.from('teams').insert({ division_id, name, wins: 0, losses: 0 });
-    if (error) return note('error', `Create team failed: ${error.message}`);
+    if (error) {
+      note('error', `Create team failed: ${error.message}`);
+      return;
+    }
     note('success', `Team "${name}" created in ${divName}.`);
     setNewTeamName('');
     await fetchAll();
   };
 
   const handleCreatePlayer = async () => {
-    const divName = newPlayerDivision || activeDivision;
+    const divName = newPlayerDivision || selectedDivision;
     const playerName = newPlayerName.trim();
     if (!divName) return note('error', 'Select a division for the new player.');
     if (!playerName) return note('error', 'Player name is required.');
@@ -212,7 +198,10 @@ const Admin: React.FC = () => {
       is_captain: !!newPlayerCaptain,
       position: newPlayerPosition,
     });
-    if (error) return note('error', `Create player failed: ${error.message}`);
+    if (error) {
+      note('error', `Create player failed: ${error.message}`);
+      return;
+    }
     note('success', `Player "${playerName}" created in ${divName}${team_id ? ` (${newPlayerTeam})` : ''}.`);
     setNewPlayerName('');
     setNewPlayerTeam('');
@@ -276,7 +265,8 @@ const Admin: React.FC = () => {
     } else if (field === 'position') {
       ({ error } = await supabase.from('players').update({ position: value as Player['position'] }).eq('id', playerId));
     } else if (field === 'team') {
-      const teamId = value ? findTeamIdByDivisionAndName(activeDivision, String(value)) : null;
+      // Use the currently selected division (the table is filtered by it)
+      const teamId = value ? findTeamIdByDivisionAndName(selectedDivision, String(value)) : null;
       const divisionId = teamId
         ? dbTeams.find(t => t.id === teamId)?.division_id ?? p.division_id
         : p.division_id;
@@ -356,7 +346,7 @@ const Admin: React.FC = () => {
         <div className="flex flex-wrap items-center gap-2">
           <select
             className="border p-2"
-            value={newTeamDivision || activeDivision}
+            value={newTeamDivision || selectedDivision}
             onChange={e => setNewTeamDivision(e.target.value)}
           >
             {allDivisionNames.length === 0 ? (
@@ -382,7 +372,7 @@ const Admin: React.FC = () => {
         <div className="flex flex-wrap items-center gap-2">
           <select
             className="border p-2"
-            value={newPlayerDivision || activeDivision}
+            value={newPlayerDivision || selectedDivision}
             onChange={e => { setNewPlayerDivision(e.target.value); setNewPlayerTeam(''); }}
           >
             {allDivisionNames.length === 0 ? (
@@ -446,174 +436,70 @@ const Admin: React.FC = () => {
         </div>
       </section>
 
-      {/* Division selector */}
-      <div className="flex items-center gap-2">
-        <span className="text-sm text-gray-600">Active division:</span>
-        <select
-          value={activeDivision}
-          onChange={(e) => setActiveDivision(e.target.value)}
-          className="border p-1"
-        >
-          {Object.keys(data.divisionStats).map((division) => (
-            <option key={division} value={division}>{division}</option>
-          ))}
-        </select>
-      </div>
-
+      {/* Team Standings (unchanged) */}
       {!dbDivisions.length ? (
         <div className="p-4 bg-yellow-50 border border-yellow-200 rounded">
           No divisions found. Create one above to get started.
         </div>
       ) : (
-        <>
-          {/* Teams per division */}
-          <section>
-            <h2 className="text-xl font-bold mb-2">Team Standings</h2>
-            {Object.entries(data.divisionStats).map(([divisionName, teamsInDiv]) => (
-              <div key={divisionName} className="mb-4">
-                <div className="flex items-center mb-2">
-                  <h3 className="text-lg font-semibold">{divisionName}</h3>
+        <section>
+          <h2 className="text-xl font-bold mb-2">Team Standings</h2>
+          {Object.entries(data.divisionStats).map(([divisionName, teamsInDiv]) => (
+            <div key={divisionName} className="mb-4">
+              <div className="flex items-center mb-2">
+                <h3 className="text-lg font-semibold">{divisionName}</h3>
+                <button
+                  onClick={() => handleAddTeamInline(divisionName)}
+                  className="bg-green-500 text-white px-2 py-1 rounded ml-4"
+                >
+                  Add Team
+                </button>
+                <button
+                  onClick={() => handleAddPlayerInline(divisionName)}
+                  className="bg-blue-500 text-white px-2 py-1 rounded ml-2"
+                >
+                  Add Blank Player
+                </button>
+              </div>
+
+              {!teamsInDiv.length ? (
+                <div className="text-sm text-gray-500 mb-2">No teams in this division yet.</div>
+              ) : null}
+
+              {teamsInDiv.map((team, teamIndex) => (
+                <div key={team.id} className="flex items-center mb-2">
+                  <input
+                    type="text"
+                    value={team.name}
+                    onChange={(e) => handleTeamChange(divisionName, teamIndex, 'name', e.target.value)}
+                    className="border p-1 mr-2"
+                  />
+                  <input
+                    type="number"
+                    value={team.wins}
+                    onChange={(e) => handleTeamChange(divisionName, teamIndex, 'wins', e.target.value)}
+                    className="border p-1 mr-2 w-20"
+                  />
+                  <input
+                    type="number"
+                    value={team.losses}
+                    onChange={(e) => handleTeamChange(divisionName, teamIndex, 'losses', e.target.value)}
+                    className="border p-1 mr-2 w-20"
+                  />
                   <button
-                    onClick={() => handleAddTeamInline(divisionName)}
-                    className="bg-green-500 text-white px-2 py-1 rounded ml-4"
+                    onClick={() => handleRemoveTeam(divisionName, teamIndex)}
+                    className="bg-red-500 text-white px-2 py-1 rounded"
                   >
-                    Add Team
-                  </button>
-                  <button
-                    onClick={() => handleAddPlayerInline(divisionName)}
-                    className="bg-blue-500 text-white px-2 py-1 rounded ml-2"
-                  >
-                    Add Blank Player
+                    Remove
                   </button>
                 </div>
-
-                {!teamsInDiv.length ? (
-                  <div className="text-sm text-gray-500 mb-2">No teams in this division yet.</div>
-                ) : null}
-
-                {teamsInDiv.map((team, teamIndex) => (
-                  <div key={team.id} className="flex items-center mb-2">
-                    <input
-                      type="text"
-                      value={team.name}
-                      onChange={(e) => handleTeamChange(divisionName, teamIndex, 'name', e.target.value)}
-                      className="border p-1 mr-2"
-                    />
-                    <input
-                      type="number"
-                      value={team.wins}
-                      onChange={(e) => handleTeamChange(divisionName, teamIndex, 'wins', e.target.value)}
-                      className="border p-1 mr-2 w-20"
-                    />
-                    <input
-                      type="number"
-                      value={team.losses}
-                      onChange={(e) => handleTeamChange(divisionName, teamIndex, 'losses', e.target.value)}
-                      className="border p-1 mr-2 w-20"
-                    />
-                    <button
-                      onClick={() => handleRemoveTeam(divisionName, teamIndex)}
-                      className="bg-red-500 text-white px-2 py-1 rounded"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ))}
-              </div>
-            ))}
-          </section>
-
-          {/* Players in active division */}
-          <section>
-            <h2 className="text-xl font-bold mb-2">Player Roster — {activeDivision || 'Select a division'}</h2>
-
-            {!awardsForDivision.length ? (
-              <div className="text-sm text-gray-500 mb-2">
-                No players in <strong>{activeDivision}</strong> yet. Use "Create Player" above or "Add Blank Player".
-              </div>
-            ) : null}
-
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Player Name</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Team</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Awards</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Captain</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Position</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {awardsForDivision.map((award) => (
-                    <tr key={award.id}>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <input
-                          type="text"
-                          value={award.playerName}
-                          onChange={(e) => handleAwardChangeById(award.id, 'playerName', e.target.value)}
-                          className="border p-1 w-full"
-                        />
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <select
-                          value={teamsForActive.includes(award.team) ? award.team : ''}
-                          onChange={(e) => handleAwardChangeById(award.id, 'team', e.target.value)}
-                          className="border p-1 w-full"
-                        >
-                          <option value="">Select Team</option>
-                          {teamsForActive.map((team) => (
-                            <option key={team} value={team}>{team}</option>
-                          ))}
-                        </select>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <input
-                          type="number"
-                          value={award.awards}
-                          onChange={(e) => handleAwardChangeById(award.id, 'awards', e.target.value)}
-                          className="border p-1 w-20"
-                        />
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <input
-                          type="checkbox"
-                          checked={award.isCaptain}
-                          onChange={(e) => handleAwardChangeById(award.id, 'isCaptain', e.target.checked)}
-                          className="border p-1"
-                        />
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <select
-                          value={award.position}
-                          onChange={(e) => handleAwardChangeById(award.id, 'position', e.target.value)}
-                          className="border p-1 w-full"
-                        >
-                          <option value="OH">OH</option>
-                          <option value="MB">MB</option>
-                          <option value="S">S</option>
-                          <option value="RS">RS</option>
-                        </select>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <button
-                          onClick={() => handleRemovePlayerById(award.id)}
-                          className="bg-red-500 text-white px-2 py-1 rounded"
-                        >
-                          Remove
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              ))}
             </div>
-          </section>
-        </>
+          ))}
+        </section>
       )}
 
-      {/* Player Management Section */}
+      {/* Player Management — with the division selector directly above */}
       {allDivisionNames.length > 0 && (
         <section className="border rounded p-4">
           <div className="flex items-center justify-between mb-4">
