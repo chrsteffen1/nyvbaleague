@@ -258,7 +258,7 @@ const ScoresAndAwards: React.FC = () => {
                     {awardData
                       .filter((player) => player.division === activeAwardTab)
                       .sort((a, b) => b.awards - a.awards)
-                      .slice(0, 3)
+                      .slice(0, 5)
                       .map((player, index) => (
                         <tr key={`${player.playerName}-${index}`} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{index + 1}</td>
