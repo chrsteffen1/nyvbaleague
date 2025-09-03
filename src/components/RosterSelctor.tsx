@@ -15,7 +15,7 @@ type PlayerRow = {
 
 // Robust matcher: women, womens, women's, etc.
 const isWomenDivision = (name?: string) => !!name && /\bwomen'?s?\b/i.test(name);
-const motmLabelFor = (name?: string) => (isWomenDivision(name) ? 'Women of the Match' : 'Man of the Match');
+const motmLabelFor = (name?: string) => (isWomenDivision(name) ? 'Woman of the Match' : 'Man of the Match');
 
 const RosterSelector: React.FC = () => {
   const [divisions, setDivisions] = React.useState<DivisionRow[]>([]);
