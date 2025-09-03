@@ -226,7 +226,7 @@ const ScoresAndAwards: React.FC = () => {
           <div className="max-w-5xl mx-auto">
             <div className="mb-8">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-                <h2 className="text-3xl font-bold text-navy mb-4 md:mb-0">Man of the Match Leaders</h2>
+                <h2 className="text-3xl font-bold text-navy mb-4 md:mb-0">PLayer of the Match Leaders</h2>
                 <div className="inline-flex bg-white shadow rounded-lg">
                   {divisionNames.map((division) => (
                     <button
