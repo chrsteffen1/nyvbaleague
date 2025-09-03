@@ -1,0 +1,588 @@
+{
+    "divisionStats": {
+      "mens-a": [
+        {
+          "name": "Animals",
+          "wins": "0",
+          "losses": "0"
+        },
+        {
+          "name": "Thomas W",
+          "wins": "0",
+          "losses": "0"
+        },
+        {
+          "name": "Dylan S",
+          "wins": "0",
+          "losses": "0"
+        },
+        {
+          "name": "King",
+          "wins": 0,
+          "losses": 0
+        },
+        {
+          "name": "Sunny",
+          "wins": 0,
+          "losses": 0
+        },
+        {
+          "name": "Vogel",
+          "wins": 0,
+          "losses": 0
+        },
+        {
+          "name": "Tarun",
+          "wins": 0,
+          "losses": 0
+        },
+        {
+          "name": "Max",
+          "wins": 0,
+          "losses": 0
+        }
+      ],
+      "mens-b": [
+        {
+          "name": "CBD",
+          "wins": "0",
+          "losses": "0"
+        },
+        {
+          "name": "Brian M",
+          "wins": "0",
+          "losses": "0"
+        },
+        {
+          "name": "Joe P",
+          "wins": "0",
+          "losses": "0"
+        },
+        {
+          "name": "Bad Boy Records",
+          "wins": "0",
+          "losses": "0"
+        },
+        {
+          "name": "Veni, Volli, Vici V.",
+          "wins": 0,
+          "losses": 0
+        },
+        {
+          "name": "Animals",
+          "wins": 0,
+          "losses": 0
+        }
+      ],
+      "womens-a": [
+        {
+          "name": "Aces",
+          "wins": 9,
+          "losses": 1
+        },
+        {
+          "name": "Fire",
+          "wins": 6,
+          "losses": 4
+        },
+        {
+          "name": "Storm",
+          "wins": 5,
+          "losses": 5
+        },
+        {
+          "name": "Strikers",
+          "wins": 4,
+          "losses": 6
+        }
+      ]
+    },
+    "awardData": [
+      {
+        "id": "70feddc9-877b-4a91-b75e-3b2faaf2940b",
+        "playerName": "Tarun",
+        "team": "Tarun",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": true,
+        "position": "S"
+      },
+      {
+        "id": "a367a79e-bf15-4cb9-921c-00cd055a0e63",
+        "playerName": "Chris Husmann",
+        "team": "Tarun",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": false,
+        "position": "OH"
+      },
+      {
+        "id": "26f1b695-bd51-4022-b0e2-21030f7225f8",
+        "playerName": "Jason S",
+        "team": "Tarun",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": false,
+        "position": "RS"
+      },
+      {
+        "id": "d3dbc5ce-6e4e-4ed7-88d0-5c1499de6f7f",
+        "playerName": "Alex Kimak",
+        "team": "Tarun",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": false,
+        "position": "OH"
+      },
+      {
+        "id": "88581989-b597-4d1a-84d2-61bcdf93502c",
+        "playerName": "James M",
+        "team": "Tarun",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": false,
+        "position": "MB"
+      },
+      {
+        "id": "02642701-408c-4bcc-b516-ec0cd56c6072",
+        "playerName": "Mankirat",
+        "team": "Tarun",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": false,
+        "position": "MB"
+      },
+      {
+        "id": "165cbfa6-145f-4142-b188-ab3d34837adc",
+        "playerName": "Dylan S",
+        "team": "Dylan S",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": true,
+        "position": "S"
+      },
+      {
+        "id": "c2cd4dc1-a272-44e3-8711-cdb7082fb3f6",
+        "playerName": "Nick Smith",
+        "team": "Dylan S",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": false,
+        "position": "OH"
+      },
+      {
+        "id": "9ee8d779-897a-453f-8718-03a1b319765e",
+        "playerName": "Mike Higgins",
+        "team": "Dylan S",
+        "division": "mens-a",
+        "awards": -1,
+        "isCaptain": false,
+        "position": "MB"
+      },
+      {
+        "id": "487aa066-fee0-4d08-bc5d-f12b14bbeadd",
+        "playerName": "Ted Kim",
+        "team": "Dylan S",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": false,
+        "position": "OH"
+      },
+      {
+        "id": "115977a5-4668-4fab-a51a-bdd0bf3ce17c",
+        "playerName": "Dio",
+        "team": "Dylan S",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": false,
+        "position": "OH"
+      },
+      {
+        "id": "0eb1849b-c867-45c4-b03f-1ea3041fab17",
+        "playerName": "Mootoo",
+        "team": "Dylan S",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": false,
+        "position": "MB"
+      },
+      {
+        "id": "6277f2fe-e7e9-4167-9354-f132154a5c4f",
+        "playerName": "Alex G",
+        "team": "Animals",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": true,
+        "position": "S"
+      },
+      {
+        "id": "41b4871e-4fc5-41ed-8ba9-44a0da484441",
+        "playerName": "Brady A",
+        "team": "Animals",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": false,
+        "position": "OH"
+      },
+      {
+        "id": "f8fb5720-ce86-40db-8fce-b05a28f57f12",
+        "playerName": "KJ",
+        "team": "Animals",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": false,
+        "position": "OH"
+      },
+      {
+        "id": "1df46876-273a-4016-b5a8-25a75dbb729f",
+        "playerName": "Bill Lawlor",
+        "team": "Animals",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": false,
+        "position": "RS"
+      },
+      {
+        "id": "540b3c95-092f-46fc-9fb0-b0465c2e1193",
+        "playerName": "John K",
+        "team": "Animals",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": false,
+        "position": "MB"
+      },
+      {
+        "id": "ffbb257f-229b-4fc4-baac-c9632ca404f3",
+        "playerName": "Taylor",
+        "team": "Animals",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": false,
+        "position": "MB"
+      },
+      {
+        "id": "a2ae551e-91b1-42eb-aca0-f2f368b4e438",
+        "playerName": "King",
+        "team": "King",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": true,
+        "position": "S"
+      },
+      {
+        "id": "ed50db5a-d024-48fc-8af5-3be44b120633",
+        "playerName": "Steven Lopez",
+        "team": "King",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": false,
+        "position": "OH"
+      },
+      {
+        "id": "822e0468-611a-4488-95b6-43b896739784",
+        "playerName": "Chris Zhao",
+        "team": "King",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": false,
+        "position": "MB"
+      },
+      {
+        "id": "b12f8baa-1640-41fb-83cf-434b266aa3a9",
+        "playerName": "Dave Zhen",
+        "team": "King",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": false,
+        "position": "MB"
+      },
+      {
+        "id": "e9828aed-aab2-452d-bf04-99daf2cf51c1",
+        "playerName": "Isaiah",
+        "team": "King",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": false,
+        "position": "RS"
+      },
+      {
+        "id": "681eaa22-0536-46b4-9501-e72b9799f609",
+        "playerName": "Brandon K",
+        "team": "King",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": false,
+        "position": "RS"
+      },
+      {
+        "id": "443fc904-0f1b-4a59-8910-52294a34a61d",
+        "playerName": "Sunny",
+        "team": "Sunny",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": true,
+        "position": "S"
+      },
+      {
+        "id": "d44d76ff-6fd4-450c-b999-bb14a52fe4eb",
+        "playerName": "Andy",
+        "team": "Sunny",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": false,
+        "position": "MB"
+      },
+      {
+        "id": "40fe0603-bf80-4aa4-9651-e279b5d4fb5e",
+        "playerName": "Rami",
+        "team": "Sunny",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": false,
+        "position": "MB"
+      },
+      {
+        "id": "bab95ce5-c89e-49d0-9193-611e21b0d0c7",
+        "playerName": "Mike Koestner",
+        "team": "Sunny",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": false,
+        "position": "OH"
+      },
+      {
+        "id": "3de75d44-ca06-4fdf-9e95-c247b066086a",
+        "playerName": "Ian Calli",
+        "team": "Sunny",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": false,
+        "position": "OH"
+      },
+      {
+        "id": "f34afffe-c9c6-4e34-a868-ad86ca4938fd",
+        "playerName": "Steve Fisher",
+        "team": "Sunny",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": false,
+        "position": "RS"
+      },
+      {
+        "id": "29dad5b1-55dc-4994-b196-07aa30ec96b1",
+        "playerName": "Max",
+        "team": "Max",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": true,
+        "position": "S"
+      },
+      {
+        "id": "d06ac10e-6c2a-41a1-ab4b-e0b5c92879a7",
+        "playerName": "Anson",
+        "team": "Max",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": false,
+        "position": "MB"
+      },
+      {
+        "id": "073310fe-6022-49bd-876b-f8a395211514",
+        "playerName": "James Ackley",
+        "team": "Max",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": false,
+        "position": "OH"
+      },
+      {
+        "id": "9fc57f04-81d4-4ac7-9a2a-86d62ee0f838",
+        "playerName": "Jeremy",
+        "team": "Max",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": false,
+        "position": "OH"
+      },
+      {
+        "id": "27c6c9ab-981d-41cd-b76b-3225fcb5418a",
+        "playerName": "Peter",
+        "team": "Max",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": false,
+        "position": "RS"
+      },
+      {
+        "id": "c8656863-64b2-479e-b386-5389524d26b5",
+        "playerName": "Antonio",
+        "team": "Max",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": false,
+        "position": "MB"
+      },
+      {
+        "id": "0c8a5409-d792-4242-a5d3-eac5e6f7400c",
+        "playerName": "Dave Vogel",
+        "team": "Vogel",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": true,
+        "position": "S"
+      },
+      {
+        "id": "6b4bb9bb-0ca7-484a-bc5c-f97a0daa0c88",
+        "playerName": "Chris Cruz",
+        "team": "Vogel",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": false,
+        "position": "RS"
+      },
+      {
+        "id": "33dcdd9e-250d-4fdc-8b88-ddcabc2df576",
+        "playerName": "Brandon B",
+        "team": "Vogel",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": false,
+        "position": "MB"
+      },
+      {
+        "id": "fc0b3692-70b2-4c34-8620-96572a933e26",
+        "playerName": "Jason C",
+        "team": "Vogel",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": false,
+        "position": "OH"
+      },
+      {
+        "id": "82099798-69e0-404c-bb0e-1fe4b9643d27",
+        "playerName": "Luke",
+        "team": "Vogel",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": false,
+        "position": "MB"
+      },
+      {
+        "id": "8a11461a-9cc4-49de-874e-0a057f6ee4bd",
+        "playerName": "Joey",
+        "team": "Vogel",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": false,
+        "position": "OH"
+      },
+      {
+        "id": "bc2769f2-27d4-489d-afee-b5f9e103668d",
+        "playerName": "Thomas W",
+        "team": "Thomas W",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": true,
+        "position": "S"
+      },
+      {
+        "id": "cf5781ab-793b-4b95-b975-1f76d91b06e1",
+        "playerName": "Ben Hirschler",
+        "team": "Thomas W",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": false,
+        "position": "OH"
+      },
+      {
+        "id": "4c360a0c-7e10-4109-9251-ef4a9e534381",
+        "playerName": "Joe Woods",
+        "team": "Thomas W",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": false,
+        "position": "MB"
+      },
+      {
+        "id": "fdda93d5-415b-4fa9-adea-93ec286cc911",
+        "playerName": "Tommy R",
+        "team": "Thomas W",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": false,
+        "position": "RS"
+      },
+      {
+        "id": "e1563d78-3abb-4a39-a2dd-fe3557c28d73",
+        "playerName": "Lamar",
+        "team": "Thomas W",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": false,
+        "position": "MB"
+      },
+      {
+        "id": "9f072724-5184-48fe-bc46-0522b93c2b1d",
+        "playerName": "Chris S",
+        "team": "Thomas W",
+        "division": "mens-a",
+        "awards": 0,
+        "isCaptain": false,
+        "position": "OH"
+      },
+      {
+        "id": "2055462a-9714-4277-a503-ea3b726a7c17",
+        "playerName": "Matt M",
+        "team": "CBD",
+        "division": "mens-b",
+        "awards": 0,
+        "isCaptain": true,
+        "position": "MB"
+      },
+      {
+        "id": "d8021a9c-b2fa-46e8-8599-9cb77475ce40",
+        "playerName": "Chris Zhao",
+        "team": "CBD",
+        "division": "mens-b",
+        "awards": 0,
+        "isCaptain": false,
+        "position": "OH"
+      },
+      {
+        "id": "e9bf915d-c608-4c57-b4d4-911900b92ad8",
+        "playerName": "Nikhil",
+        "team": "CBD",
+        "division": "mens-b",
+        "awards": 0,
+        "isCaptain": false,
+        "position": "OH"
+      },
+      {
+        "id": "7be2c19a-df06-4ea0-a917-d7da123e8856",
+        "playerName": "Chris M",
+        "team": "CBD",
+        "division": "mens-b",
+        "awards": 0,
+        "isCaptain": false,
+        "position": "S"
+      },
+      {
+        "id": "ca50368a-5854-4b7a-b781-918b286cfd7f",
+        "playerName": "Mike",
+        "team": "CBD",
+        "division": "mens-b",
+        "awards": 0,
+        "isCaptain": false,
+        "position": "RS"
+      },
+      {
+        "id": "f2fdfa44-75aa-4513-86c7-2322796102ec",
+        "playerName": "Elliot",
+        "team": "CBD",
+        "division": "mens-b",
+        "awards": 0,
+        "isCaptain": false,
+        "position": "MB"
+      }
+    ]
+  }

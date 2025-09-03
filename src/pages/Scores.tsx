@@ -1,14 +1,28 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Hero from '../components/Hero';
-import leagueData from '../data/league-data.json';
+// keep your component path/name as-is if it's "RosterSelctor"
 import RosterSelector from '../components/RosterSelctor';
+import { supabase } from '../lib/supabaseClient';
 
+/** DB row types (match your Admin page) */
+type DivisionRow = { id: string; name: string };
+type TeamRow = { id: string; division_id: string; name: string; wins: number; losses: number };
+type PlayerRow = {
+  id: string;
+  division_id: string;
+  team_id: string | null;
+  player_name: string;
+  awards: number;
+  is_captain: boolean;
+  position: 'OH' | 'MB' | 'S' | 'RS';
+};
+
+/** UI types you already use */
 interface TeamStats {
   name: string;
   wins: number;
   losses: number;
 }
-
 interface AwardData {
   playerName: string;
   team: string;
@@ -18,50 +32,127 @@ interface AwardData {
   position: string;
 }
 
-// Keys of divisions based on the JSON shape
-type DivisionKey = keyof typeof leagueData.divisionStats;
-type DivisionMap = Record<DivisionKey, TeamStats[]>;
+/** division name -> teams[] */
+type DivisionMap = Record<string, TeamStats[]>;
 
-// Normalize raw JSON -> strong typed numbers
-const normalizeDivisionStats = (raw: typeof leagueData.divisionStats): DivisionMap => {
-  return Object.fromEntries(
-    Object.entries(raw).map(([division, teams]) => [
-      division,
-      (teams as any[]).map((t) => ({
-        name: String(t.name),
-        wins: Number(t.wins) || 0,
-        losses: Number(t.losses) || 0,
-      })),
-    ])
-  ) as DivisionMap;
-};
-
-const normalizeAwardData = (raw: typeof leagueData.awardData): AwardData[] => {
-  return (raw as any[]).map((p) => ({
-    playerName: String(p.playerName),
-    team: String(p.team),
-    division: String(p.division),
-    awards: Number(p.awards) || 0,
-    isCaptain: Boolean(p.isCaptain),
-    position: String(p.position ?? ''),
-  }));
-};
+const pretty = (s: string) =>
+  s.replace('-', ' ').replace(/(^|\s)\S/g, (L) => L.toUpperCase());
 
 const ScoresAndAwards: React.FC = () => {
-  // Normalize once; keeps UI logic identical but fixes TS errors
-  const initialDivisionStats = React.useMemo(
-    () => normalizeDivisionStats(leagueData.divisionStats),
-    []
-  );
-  const initialAwardData = React.useMemo(
-    () => normalizeAwardData(leagueData.awardData),
-    []
-  );
+  // raw DB rows
+  const [divisions, setDivisions] = React.useState<DivisionRow[]>([]);
+  const [teams, setTeams] = React.useState<TeamRow[]>([]);
+  const [players, setPlayers] = React.useState<PlayerRow[]>([]);
+  const [loading, setLoading] = React.useState(true);
 
-  const [activeTab, setActiveTab] = useState<DivisionKey>('mens-a');
-  const [activeAwardTab, setActiveAwardTab] = useState<DivisionKey>('mens-a');
-  const [divisionStats, setDivisionStats] = useState<DivisionMap>(initialDivisionStats);
-  const [awardData, setAwardData] = useState<AwardData[]>(initialAwardData);
+  // UI state
+  const [activeTab, setActiveTab] = React.useState<string>('');
+  const [activeAwardTab, setActiveAwardTab] = React.useState<string>('');
+
+  // one-shot fetch + helpers
+  const fetchAll = React.useCallback(async () => {
+    const [{ data: d, error: e1 }, { data: t, error: e2 }, { data: p, error: e3 }] =
+      await Promise.all([
+        supabase.from('divisions').select('*').order('name'),
+        supabase.from('teams').select('*'),
+        supabase.from('players').select('*'),
+      ]);
+    if (e1 || e2 || e3) {
+      console.error(e1 ?? e2 ?? e3);
+    }
+    setDivisions(d ?? []);
+    setTeams(t ?? []);
+    setPlayers(p ?? []);
+  }, []);
+
+  React.useEffect(() => {
+    (async () => {
+      setLoading(true);
+      await fetchAll();
+      setLoading(false);
+    })();
+  }, [fetchAll]);
+
+  // keep active tabs valid whenever divisions change
+  React.useEffect(() => {
+    if (!divisions.length) {
+      setActiveTab('');
+      setActiveAwardTab('');
+      return;
+    }
+    if (!activeTab || !divisions.some((x) => x.name === activeTab)) {
+      setActiveTab(divisions[0].name);
+    }
+    if (!activeAwardTab || !divisions.some((x) => x.name === activeAwardTab)) {
+      setActiveAwardTab(divisions[0].name);
+    }
+  }, [divisions, activeTab, activeAwardTab]);
+
+  // (optional) realtime refresh when rows change
+  React.useEffect(() => {
+    const ch = supabase
+      .channel('realtime-scores')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'divisions' }, fetchAll)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'teams' }, fetchAll)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'players' }, fetchAll)
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [fetchAll]);
+
+  // ---------- Derive the shapes your UI expects ----------
+  const divisionStats: DivisionMap = React.useMemo(() => {
+    const byIdDiv = Object.fromEntries(divisions.map((d) => [d.id, d]));
+    const map: DivisionMap = {};
+    // initialize each division with an empty array so tabs render
+    divisions.forEach((d) => { map[d.name] = []; });
+
+    teams.forEach((t) => {
+      const divName = byIdDiv[t.division_id]?.name;
+      if (!divName) return;
+      (map[divName] ||= []).push({
+        name: t.name,
+        wins: Number(t.wins) || 0,
+        losses: Number(t.losses) || 0,
+      });
+    });
+
+    // sort per division by team name for consistent display
+    Object.keys(map).forEach((k) => {
+      map[k].sort((a, b) => a.name.localeCompare(b.name));
+    });
+    return map;
+  }, [divisions, teams]);
+
+  const awardData: AwardData[] = React.useMemo(() => {
+    const byIdDiv = Object.fromEntries(divisions.map((d) => [d.id, d]));
+    const byIdTeam = Object.fromEntries(teams.map((t) => [t.id, t]));
+    return players.map((p) => ({
+      playerName: p.player_name,
+      team: p.team_id ? (byIdTeam[p.team_id]?.name ?? '') : '',
+      division: byIdDiv[p.division_id]?.name ?? '',
+      awards: Number(p.awards) || 0,
+      isCaptain: !!p.is_captain,
+      position: p.position,
+    }));
+  }, [divisions, teams, players]);
+
+  // tabs come from division names now (not JSON keys)
+  const divisionNames = divisions.map((d) => d.name);
+
+  if (loading) {
+    return (
+      <div>
+        <Hero
+          title="League Scores, Statistics & Player Awards"
+          subtitle="Stay updated with the latest results, team statistics and player awards"
+          backgroundImage="https://images.pexels.com/photos/2444852/pexels-photo-2444852.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+        />
+        <section className="py-16 bg-white">
+          <div className="container mx-auto px-4">Loading…</div>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -71,13 +162,14 @@ const ScoresAndAwards: React.FC = () => {
         backgroundImage="https://images.pexels.com/photos/2444852/pexels-photo-2444852.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
       />
 
+      {/* ---------- Standings ---------- */}
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
           <div className="mb-8">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between">
               <h2 className="text-3xl font-bold text-navy mb-4 md:mb-0">League Standings</h2>
               <div className="inline-flex bg-white shadow rounded-lg">
-                {(Object.keys(divisionStats) as DivisionKey[]).map((division) => (
+                {divisionNames.map((division) => (
                   <button
                     key={division}
                     className={`px-4 py-2 text-sm font-medium ${
@@ -85,7 +177,7 @@ const ScoresAndAwards: React.FC = () => {
                     }`}
                     onClick={() => setActiveTab(division)}
                   >
-                    {division.replace('-', ' ').replace(/(^|\s)\S/g, (L) => L.toUpperCase())}
+                    {pretty(division)}
                   </button>
                 ))}
               </div>
@@ -104,16 +196,23 @@ const ScoresAndAwards: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {[...divisionStats[activeTab]]
+                  {[...(divisionStats[activeTab] ?? [])]
                     .sort((a, b) => b.wins - a.wins)
                     .map((team, index) => (
-                      <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                      <tr key={`${team.name}-${index}`} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{team.name}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{team.wins}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{team.losses}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{team.wins + team.losses}</td>
                       </tr>
                     ))}
+                  {!divisionStats[activeTab]?.length && (
+                    <tr>
+                      <td className="px-6 py-4 text-sm text-gray-500" colSpan={4}>
+                        No teams yet in {pretty(activeTab)}.
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -121,6 +220,7 @@ const ScoresAndAwards: React.FC = () => {
         </div>
       </section>
 
+      {/* ---------- Awards ---------- */}
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
           <div className="max-w-5xl mx-auto">
@@ -128,7 +228,7 @@ const ScoresAndAwards: React.FC = () => {
               <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                 <h2 className="text-3xl font-bold text-navy mb-4 md:mb-0">Man of the Match Leaders</h2>
                 <div className="inline-flex bg-white shadow rounded-lg">
-                  {(Object.keys(divisionStats) as DivisionKey[]).map((division) => (
+                  {divisionNames.map((division) => (
                     <button
                       key={division}
                       className={`px-4 py-2 text-sm font-medium ${
@@ -136,7 +236,7 @@ const ScoresAndAwards: React.FC = () => {
                       }`}
                       onClick={() => setActiveAwardTab(division)}
                     >
-                      {division.replace('-', ' ').replace(/(^|\s)\S/g, (L) => L.toUpperCase())}
+                      {pretty(division)}
                     </button>
                   ))}
                 </div>
@@ -160,22 +260,30 @@ const ScoresAndAwards: React.FC = () => {
                       .sort((a, b) => b.awards - a.awards)
                       .slice(0, 3)
                       .map((player, index) => (
-                        <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                        <tr key={`${player.playerName}-${index}`} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{index + 1}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{player.playerName}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{player.team}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{player.awards}</td>
                         </tr>
                       ))}
+                    {!awardData.some((p) => p.division === activeAwardTab) && (
+                      <tr>
+                        <td className="px-6 py-4 text-sm text-gray-500" colSpan={4}>
+                          No player awards yet in {pretty(activeAwardTab)}.
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
             </div>
+
           </div>
         </div>
       </section>
 
-      <RosterSelector/>
+      <RosterSelector />
     </div>
   );
 };

@@ -1,221 +1,603 @@
-import React, { useState } from 'react';
-import leagueData from '../data/league-data.json';
+import React, { useEffect, useMemo, useState } from 'react';
+import { supabase } from '../lib/supabaseClient';
 
-const Admin = () => {
-  const [data, setData] = useState(leagueData);
-  const [activeDivision, setActiveDivision] = useState(Object.keys(leagueData.divisionStats)[0]);
+// --- DB row types ---
+type DivisionRow = { id: string; name: string };
+type TeamRow = { id: string; division_id: string; name: string; wins: number; losses: number };
+type PlayerRow = {
+  id: string;
+  division_id: string;
+  team_id: string | null;
+  player_name: string;
+  awards: number;
+  is_captain: boolean;
+  position: 'OH' | 'MB' | 'S' | 'RS';
+};
 
-  const handleTeamChange = (division: string, teamIndex: number, field: string, value: string) => {
-    const newData = { ...data };
-    (newData.divisionStats as any)[division][teamIndex][field] = value;
-    setData(newData);
+// --- UI model (keep your rendering intact) ---
+type Team = { id: string; name: string; wins: number; losses: number };
+type DivisionStats = Record<string, Team[]>;
+type Player = {
+  id: string;
+  playerName: string;
+  team: string;     // team name for dropdown
+  division: string; // division name
+  awards: number;
+  isCaptain: boolean;
+  position: 'OH' | 'MB' | 'S' | 'RS';
+};
+type LeagueData = { divisionStats: DivisionStats; awardData: Player[] };
+
+const Admin: React.FC = () => {
+  const [dbDivisions, setDbDivisions] = useState<DivisionRow[]>([]);
+  const [dbTeams, setDbTeams] = useState<TeamRow[]>([]);
+  const [dbPlayers, setDbPlayers] = useState<PlayerRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeDivision, setActiveDivision] = useState<string>('');
+
+  // UI feedback
+  const [msg, setMsg] = useState<{ type: 'error' | 'success' | 'info'; text: string } | null>(null);
+  const note = (type: 'error' | 'success' | 'info', text: string) => setMsg({ type, text });
+
+  // --- Create panel local state ---
+  const [newDivisionName, setNewDivisionName] = useState('');
+  const [newTeamDivision, setNewTeamDivision] = useState(''); // division name
+  const [newTeamName, setNewTeamName] = useState('');
+  const [newPlayerDivision, setNewPlayerDivision] = useState(''); // division name
+  const [newPlayerTeam, setNewPlayerTeam] = useState(''); // team name (optional)
+  const [newPlayerName, setNewPlayerName] = useState('');
+  const [newPlayerPosition, setNewPlayerPosition] = useState<'OH' | 'MB' | 'S' | 'RS'>('OH');
+  const [newPlayerCaptain, setNewPlayerCaptain] = useState(false);
+  const [newPlayerAwards, setNewPlayerAwards] = useState<number>(0);
+
+  // Fetch all data (used on mount and after writes)
+  const fetchAll = async () => {
+    const [{ data: divisions, error: e1 }, { data: teams, error: e2 }, { data: players, error: e3 }] =
+      await Promise.all([
+        supabase.from('divisions').select('*').order('name'),
+        supabase.from('teams').select('*'),
+        supabase.from('players').select('*'),
+      ]);
+    if (e1 || e2 || e3) console.error(e1 ?? e2 ?? e3);
+
+    setDbDivisions(divisions ?? []);
+    setDbTeams(teams ?? []);
+    setDbPlayers(players ?? []);
   };
 
-  const handleAddTeam = (division: string) => {
-    const newData = { ...data };
-    (newData.divisionStats as any)[division].push({ name: 'New Team', wins: 0, losses: 0 });
-    setData(newData);
-  };
+  // Initial load
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      await fetchAll();
+      setLoading(false);
+    })();
+  }, []);
 
-  const handleRemoveTeam = (division: string, teamIndex: number) => {
-    const newData = { ...data };
-    const removedTeam = (newData.divisionStats as any)[division][teamIndex];
-    (newData.divisionStats as any)[division].splice(teamIndex, 1);
+  // Keep active division valid
+  useEffect(() => {
+    if (!dbDivisions.length) {
+      if (activeDivision) setActiveDivision('');
+      return;
+    }
+    if (!activeDivision || !dbDivisions.some(d => d.name === activeDivision)) {
+      setActiveDivision(dbDivisions[0].name);
+    }
+  }, [dbDivisions, activeDivision]);
 
-    // Unassign players from the removed team
-    newData.awardData.forEach((player) => {
-      if (player.team === removedTeam.name) {
-        player.team = '';
-      }
+  // Build UI data
+  const data: LeagueData = useMemo(() => {
+    const byIdDiv = Object.fromEntries(dbDivisions.map(d => [d.id, d]));
+    const byIdTeam = Object.fromEntries(dbTeams.map(t => [t.id, t]));
+
+    const divisionStats: DivisionStats = {};
+    dbDivisions.forEach(d => { divisionStats[d.name] = []; });
+    dbTeams.forEach(t => {
+      const divName = byIdDiv[t.division_id]?.name;
+      if (!divName) return;
+      (divisionStats[divName] ||= []).push({ id: t.id, name: t.name, wins: t.wins, losses: t.losses });
     });
 
-    setData(newData);
-  };
+    const awardData: Player[] = dbPlayers.map(p => {
+      const divName = byIdDiv[p.division_id]?.name ?? '';
+      const teamName = p.team_id ? (byIdTeam[p.team_id]?.name ?? '') : '';
+      return {
+        id: p.id,
+        playerName: p.player_name,
+        team: teamName,
+        division: divName,
+        awards: p.awards,
+        isCaptain: p.is_captain,
+        position: p.position,
+      };
+    });
 
-  const handleAwardChange = (awardIndex: number, field: string, value: any) => {
-    const newData = { ...data };
-    const award = (newData.awardData as any).find((a: any) => a.playerName === (data.awardData as any)[awardIndex].playerName);
-    if (award) {
-      award[field] = value;
-      if (field === 'team') {
-        const division = Object.keys(data.divisionStats).find(d => (data.divisionStats as any)[d].some((t: any) => t.name === value));
-        if (division) {
-          award.division = division;
-        }
-      }
+    for (const key of Object.keys(divisionStats)) {
+      divisionStats[key].sort((a, b) => a.name.localeCompare(b.name));
     }
-    setData(newData);
+
+    return { divisionStats, awardData };
+  }, [dbDivisions, dbTeams, dbPlayers]);
+
+  // Derived
+  const teamsForActive = useMemo(
+    () => (data.divisionStats[activeDivision]?.map(t => t.name) ?? []),
+    [data.divisionStats, activeDivision]
+  );
+  const awardsForDivision = useMemo(
+    () => data.awardData.filter(a => a.division === activeDivision),
+    [data.awardData, activeDivision]
+  );
+
+  // helpers
+  const findDivisionIdByName = (name: string) => dbDivisions.find(d => d.name === name)?.id ?? null;
+  const findTeamIdByDivisionAndName = (divisionName: string, teamName: string) => {
+    const divId = findDivisionIdByName(divisionName);
+    if (!divId) return null;
+    return dbTeams.find(t => t.division_id === divId && t.name === teamName)?.id ?? null;
   };
 
-  const handleAddPlayer = (division: string) => {
-    const newData = { ...data };
-    newData.awardData.push({ playerName: '', team: '', division: division, awards: 0, isCaptain: false, position: 'OH' });
-    setData(newData);
-  };
-
-  const handleRemovePlayer = (awardIndex: number) => {
-    const newData = { ...data };
-    newData.awardData.splice(awardIndex, 1);
-    setData(newData);
-  };
-
-  const handleSaveChanges = async () => {
-    try {
-      const response = await fetch('/api/update-data', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (response.ok) {
-        alert('Data saved successfully!');
-      } else {
-        alert('Error saving data.');
-      }
-    } catch (error) {
-      console.error('Error saving data:', error);
-      alert('Error saving data.');
+  // ----- Create handlers (Division / Team / Player) -----
+  const handleCreateDivision = async () => {
+    const name = newDivisionName.trim();
+    if (!name) return note('error', 'Division name is required.');
+    const { data, error } = await supabase.from('divisions').insert({ name }).select('*').single();
+    if (error) {
+      note('error', `Create division failed: ${error.message}`);
+      return;
     }
+    note('success', `Division "${data.name}" created.`);
+    setNewDivisionName('');
+    setActiveDivision(data.name);
+    setNewTeamDivision(data.name); // convenience for next form
+    setNewPlayerDivision(data.name);
+    await fetchAll();
   };
 
-  const teams = (data.divisionStats as any)[activeDivision]?.map((t: any) => t.name) || [];
+  const handleCreateTeam = async () => {
+    const divName = newTeamDivision || activeDivision;
+    const name = newTeamName.trim();
+    if (!divName) return note('error', 'Select a division for the new team.');
+    if (!name) return note('error', 'Team name is required.');
+    const division_id = findDivisionIdByName(divName);
+    if (!division_id) return note('error', 'Selected division not found.');
+    const { error } = await supabase.from('teams').insert({ division_id, name, wins: 0, losses: 0 });
+    if (error) {
+      note('error', `Create team failed: ${error.message}`);
+      return;
+    }
+    note('success', `Team "${name}" created in ${divName}.`);
+    setNewTeamName('');
+    await fetchAll();
+  };
+
+  const handleCreatePlayer = async () => {
+    const divName = newPlayerDivision || activeDivision;
+    const playerName = newPlayerName.trim();
+    if (!divName) return note('error', 'Select a division for the new player.');
+    if (!playerName) return note('error', 'Player name is required.');
+    const division_id = findDivisionIdByName(divName);
+    if (!division_id) return note('error', 'Selected division not found.');
+    const team_id = newPlayerTeam ? findTeamIdByDivisionAndName(divName, newPlayerTeam) : null;
+
+    const { error } = await supabase.from('players').insert({
+      division_id,
+      team_id,
+      player_name: playerName,
+      awards: Number(newPlayerAwards) || 0,
+      is_captain: !!newPlayerCaptain,
+      position: newPlayerPosition,
+    });
+    if (error) {
+      note('error', `Create player failed: ${error.message}`);
+      return;
+    }
+    note('success', `Player "${playerName}" created in ${divName}${team_id ? ` (${newPlayerTeam})` : ''}.`);
+    setNewPlayerName('');
+    setNewPlayerTeam('');
+    setNewPlayerAwards(0);
+    setNewPlayerCaptain(false);
+    setNewPlayerPosition('OH');
+    await fetchAll();
+  };
+
+  // ----- Team editing -----
+  const handleTeamChange = async (
+    divisionName: string,
+    teamIndex: number,
+    field: 'name' | 'wins' | 'losses',
+    value: string
+  ) => {
+    const team = data.divisionStats[divisionName]?.[teamIndex];
+    if (!team) return;
+    const payload: Partial<TeamRow> =
+      field === 'wins' || field === 'losses'
+        ? ({ [field]: Number(value) || 0 } as any)
+        : ({ [field]: value } as any);
+    const { error } = await supabase.from('teams').update(payload).eq('id', team.id);
+    if (error) note('error', `Update team failed: ${error.message}`);
+    else note('success', 'Team updated.');
+    await fetchAll();
+  };
+
+  const handleAddTeamInline = async (divisionName: string) => {
+    const division_id = findDivisionIdByName(divisionName);
+    if (!division_id) return note('error', 'Division not found.');
+    const { error } = await supabase.from('teams').insert({ division_id, name: 'New Team', wins: 0, losses: 0 });
+    if (error) note('error', `Create team failed: ${error.message}`);
+    else note('success', `Team created in ${divisionName}.`);
+    await fetchAll();
+  };
+
+  const handleRemoveTeam = async (divisionName: string, teamIndex: number) => {
+    const team = data.divisionStats[divisionName]?.[teamIndex];
+    if (!team) return;
+    const { error: e1 } = await supabase.from('players').update({ team_id: null }).eq('team_id', team.id);
+    const { error: e2 } = await supabase.from('teams').delete().eq('id', team.id);
+    if (e1 || e2) note('error', `Remove team failed: ${(e1 ?? e2)?.message}`);
+    else note('success', 'Team removed.');
+    await fetchAll();
+  };
+
+  // ----- Player editing -----
+  const handleAwardChangeById = async (playerId: string, field: keyof Player, value: any) => {
+    const p = dbPlayers.find(x => x.id === playerId);
+    if (!p) return;
+
+    let error = null as any;
+
+    if (field === 'playerName') {
+      ({ error } = await supabase.from('players').update({ player_name: String(value) }).eq('id', playerId));
+    } else if (field === 'awards') {
+      ({ error } = await supabase.from('players').update({ awards: Number(value) || 0 }).eq('id', playerId));
+    } else if (field === 'isCaptain') {
+      ({ error } = await supabase.from('players').update({ is_captain: !!value }).eq('id', playerId));
+    } else if (field === 'position') {
+      ({ error } = await supabase.from('players').update({ position: value as Player['position'] }).eq('id', playerId));
+    } else if (field === 'team') {
+      const teamId = value ? findTeamIdByDivisionAndName(activeDivision, String(value)) : null;
+      const divisionId = teamId
+        ? dbTeams.find(t => t.id === teamId)?.division_id ?? p.division_id
+        : p.division_id;
+      ({ error } = await supabase
+        .from('players')
+        .update({ team_id: teamId, division_id: divisionId })
+        .eq('id', playerId));
+    } else if (field === 'division') {
+      const divisionId = findDivisionIdByName(String(value));
+      if (divisionId) ({ error } = await supabase.from('players').update({ division_id: divisionId }).eq('id', playerId));
+    }
+
+    if (error) note('error', `Update player failed: ${error.message}`);
+    else note('success', 'Player updated.');
+    await fetchAll();
+  };
+
+  const handleAddPlayerInline = async (divisionName: string) => {
+    const division_id = findDivisionIdByName(divisionName);
+    if (!division_id) return note('error', 'Division not found.');
+    const { error } = await supabase.from('players').insert({
+      division_id,
+      team_id: null,
+      player_name: '',
+      awards: 0,
+      is_captain: false,
+      position: 'OH',
+    });
+    if (error) note('error', `Create player failed: ${error.message}`);
+    else note('success', `Blank player created in ${divisionName}.`);
+    await fetchAll();
+  };
+
+  const handleRemovePlayerById = async (playerId: string) => {
+    const { error } = await supabase.from('players').delete().eq('id', playerId);
+    if (error) note('error', `Remove player failed: ${error.message}`);
+    else note('success', 'Player removed.');
+    await fetchAll();
+  };
+
+  // ---------- Render ----------
+  if (loading) return <div className="p-4">Loading…</div>;
+
+  const allDivisionNames = dbDivisions.map(d => d.name);
+  const teamsForSelectedPlayerDivision =
+    (newPlayerDivision ? data.divisionStats[newPlayerDivision] : [])?.map(t => t.name) ?? [];
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Admin Panel</h1>
+    <div className="p-4 space-y-6">
+      <h1 className="text-2xl font-bold">Admin Panel</h1>
 
-      <h2 className="text-xl font-bold mb-2">Team Standings</h2>
-      {Object.entries(data.divisionStats).map(([division, teams]) => (
-        <div key={division} className="mb-4">
-          <div className="flex items-center mb-2">
-            <h3 className="text-lg font-semibold">{division}</h3>
-            <button onClick={() => handleAddTeam(division)} className="bg-green-500 text-white px-2 py-1 rounded ml-4">
-              Add Team
-            </button>
-          </div>
-          {(teams as any).map((team: any, teamIndex: number) => (
-            <div key={teamIndex} className="flex items-center mb-2">
-              <input
-                type="text"
-                value={team.name}
-                onChange={(e) => handleTeamChange(division, teamIndex, 'name', e.target.value)}
-                className="border p-1 mr-2"
-              />
-              <input
-                type="number"
-                value={team.wins}
-                onChange={(e) => handleTeamChange(division, teamIndex, 'wins', e.target.value)}
-                className="border p-1 mr-2 w-20"
-              />
-              <input
-                type="number"
-                value={team.losses}
-                onChange={(e) => handleTeamChange(division, teamIndex, 'losses', e.target.value)}
-                className="border p-1 mr-2 w-20"
-              />
-              <button onClick={() => handleRemoveTeam(division, teamIndex)} className="bg-red-500 text-white px-2 py-1 rounded">
-                Remove
-              </button>
-            </div>
-          ))}
+      {msg && (
+        <div
+          className={
+            msg.type === 'error'
+              ? 'p-3 rounded bg-red-50 text-red-700 border border-red-200'
+              : msg.type === 'success'
+              ? 'p-3 rounded bg-green-50 text-green-700 border border-green-200'
+              : 'p-3 rounded bg-blue-50 text-blue-700 border border-blue-200'
+          }
+        >
+          {msg.text}
         </div>
-      ))}
+      )}
 
-      <h2 className="text-xl font-bold mb-2">Player Roster</h2>
-      <div className="mb-4">
+      {/* Create Panel */}
+      <section className="p-4 border rounded space-y-4">
+        <h2 className="text-xl font-semibold">Create</h2>
+
+        {/* Create Division */}
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            className="border p-2"
+            placeholder="New division name"
+            value={newDivisionName}
+            onChange={e => setNewDivisionName(e.target.value)}
+          />
+          <button onClick={handleCreateDivision} className="bg-indigo-600 text-white px-3 py-2 rounded">
+            Create Division
+          </button>
+        </div>
+
+        {/* Create Team */}
+        <div className="flex flex-wrap items-center gap-2">
+          <select
+            className="border p-2"
+            value={newTeamDivision || activeDivision}
+            onChange={e => setNewTeamDivision(e.target.value)}
+          >
+            {allDivisionNames.length === 0 ? (
+              <option value="">Create a division first</option>
+            ) : (
+              allDivisionNames.map(d => (
+                <option key={d} value={d}>{d}</option>
+              ))
+            )}
+          </select>
+          <input
+            className="border p-2"
+            placeholder="New team name"
+            value={newTeamName}
+            onChange={e => setNewTeamName(e.target.value)}
+          />
+          <button onClick={handleCreateTeam} className="bg-green-600 text-white px-3 py-2 rounded" disabled={!allDivisionNames.length}>
+            Create Team
+          </button>
+        </div>
+
+        {/* Create Player */}
+        <div className="flex flex-wrap items-center gap-2">
+          <select
+            className="border p-2"
+            value={newPlayerDivision || activeDivision}
+            onChange={e => { setNewPlayerDivision(e.target.value); setNewPlayerTeam(''); }}
+          >
+            {allDivisionNames.length === 0 ? (
+              <option value="">Create a division first</option>
+            ) : (
+              allDivisionNames.map(d => (
+                <option key={d} value={d}>{d}</option>
+              ))
+            )}
+          </select>
+
+          <select
+            className="border p-2"
+            value={newPlayerTeam}
+            onChange={e => setNewPlayerTeam(e.target.value)}
+          >
+            <option value="">(no team)</option>
+            {teamsForSelectedPlayerDivision.map(t => (
+              <option key={t} value={t}>{t}</option>
+            ))}
+          </select>
+
+          <input
+            className="border p-2"
+            placeholder="Player name"
+            value={newPlayerName}
+            onChange={e => setNewPlayerName(e.target.value)}
+          />
+
+          <select
+            className="border p-2"
+            value={newPlayerPosition}
+            onChange={e => setNewPlayerPosition(e.target.value as Player['position'])}
+          >
+            <option value="OH">OH</option>
+            <option value="MB">MB</option>
+            <option value="S">S</option>
+            <option value="RS">RS</option>
+          </select>
+
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={newPlayerCaptain}
+              onChange={e => setNewPlayerCaptain(e.target.checked)}
+            />
+            Captain
+          </label>
+
+          <input
+            className="border p-2 w-24"
+            type="number"
+            placeholder="Awards"
+            value={newPlayerAwards}
+            onChange={e => setNewPlayerAwards(Number(e.target.value) || 0)}
+          />
+
+          <button onClick={handleCreatePlayer} className="bg-blue-600 text-white px-3 py-2 rounded" disabled={!allDivisionNames.length}>
+            Create Player
+          </button>
+        </div>
+      </section>
+
+      {/* Division selector */}
+      <div className="flex items-center gap-2">
+        <span className="text-sm text-gray-600">Active division:</span>
         <select
           value={activeDivision}
           onChange={(e) => setActiveDivision(e.target.value)}
-          className="border p-1 mr-2"
+          className="border p-1"
         >
           {Object.keys(data.divisionStats).map((division) => (
             <option key={division} value={division}>{division}</option>
           ))}
         </select>
       </div>
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Player Name</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Team</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Awards</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Captain</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Position</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {data.awardData.filter(award => award.division === activeDivision).map((award, awardIndex) => (
-              <tr key={awardIndex}>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <input
-                    type="text"
-                    value={award.playerName}
-                    onChange={(e) => handleAwardChange(awardIndex, 'playerName', e.target.value)}
-                    className="border p-1 w-full"
-                  />
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <select
-                    value={teams.includes(award.team) ? award.team : ''}
-                    onChange={(e) => handleAwardChange(awardIndex, 'team', e.target.value)}
-                    className="border p-1 w-full"
+
+      {!dbDivisions.length ? (
+        <div className="p-4 bg-yellow-50 border border-yellow-200 rounded">
+          No divisions found. Create one above to get started.
+        </div>
+      ) : (
+        <>
+          {/* Teams per division */}
+          <section>
+            <h2 className="text-xl font-bold mb-2">Team Standings</h2>
+            {Object.entries(data.divisionStats).map(([divisionName, teamsInDiv]) => (
+              <div key={divisionName} className="mb-4">
+                <div className="flex items-center mb-2">
+                  <h3 className="text-lg font-semibold">{divisionName}</h3>
+                  <button
+                    onClick={() => handleAddTeamInline(divisionName)}
+                    className="bg-green-500 text-white px-2 py-1 rounded ml-4"
                   >
-                    <option value="">Select Team</option>
-                    {teams.map((team: string) => (
-                      <option key={team} value={team}>{team}</option>
-                    ))}
-                  </select>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <input
-                    type="number"
-                    value={award.awards}
-                    onChange={(e) => handleAwardChange(awardIndex, 'awards', e.target.value)}
-                    className="border p-1 w-20"
-                  />
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <input
-                    type="checkbox"
-                    checked={award.isCaptain}
-                    onChange={(e) => handleAwardChange(awardIndex, 'isCaptain', e.target.checked)}
-                    className="border p-1"
-                  />
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <select
-                    value={award.position}
-                    onChange={(e) => handleAwardChange(awardIndex, 'position', e.target.value)}
-                    className="border p-1 w-full"
-                  >
-                    <option value="OH">OH</option>
-                    <option value="MB">MB</option>
-                    <option value="S">S</option>
-                    <option value="RS">RS</option>
-                  </select>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <button onClick={() => handleRemovePlayer(awardIndex)} className="bg-red-500 text-white px-2 py-1 rounded">
-                    Remove
+                    Add Team
                   </button>
-                </td>
-              </tr>
+                  <button
+                    onClick={() => handleAddPlayerInline(divisionName)}
+                    className="bg-blue-500 text-white px-2 py-1 rounded ml-2"
+                  >
+                    Add Blank Player
+                  </button>
+                </div>
+
+                {!teamsInDiv.length ? (
+                  <div className="text-sm text-gray-500 mb-2">No teams in this division yet.</div>
+                ) : null}
+
+                {teamsInDiv.map((team, teamIndex) => (
+                  <div key={team.id} className="flex items-center mb-2">
+                    <input
+                      type="text"
+                      value={team.name}
+                      onChange={(e) => handleTeamChange(divisionName, teamIndex, 'name', e.target.value)}
+                      className="border p-1 mr-2"
+                    />
+                    <input
+                      type="number"
+                      value={team.wins}
+                      onChange={(e) => handleTeamChange(divisionName, teamIndex, 'wins', e.target.value)}
+                      className="border p-1 mr-2 w-20"
+                    />
+                    <input
+                      type="number"
+                      value={team.losses}
+                      onChange={(e) => handleTeamChange(divisionName, teamIndex, 'losses', e.target.value)}
+                      className="border p-1 mr-2 w-20"
+                    />
+                    <button
+                      onClick={() => handleRemoveTeam(divisionName, teamIndex)}
+                      className="bg-red-500 text-white px-2 py-1 rounded"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
             ))}
-          </tbody>
-        </table>
-      </div>
+          </section>
 
-      <button onClick={() => handleAddPlayer(activeDivision)} className="bg-green-500 text-white px-4 py-2 rounded mt-4">
-        Add Player
-      </button>
+          {/* Players in active division */}
+          <section>
+            <h2 className="text-xl font-bold mb-2">Player Roster — {activeDivision || 'Select a division'}</h2>
 
-      <button onClick={handleSaveChanges} className="bg-blue-500 text-white px-4 py-2 rounded mt-4 ml-2">
-        Save Changes
-      </button>
+            {!awardsForDivision.length ? (
+              <div className="text-sm text-gray-500 mb-2">
+                No players in <strong>{activeDivision}</strong> yet. Use “Create Player” above or “Add Blank Player”.
+              </div>
+            ) : null}
+
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Player Name</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Team</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Awards</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Captain</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Position</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {awardsForDivision.map((award) => (
+                    <tr key={award.id}>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <input
+                          type="text"
+                          value={award.playerName}
+                          onChange={(e) => handleAwardChangeById(award.id, 'playerName', e.target.value)}
+                          className="border p-1 w-full"
+                        />
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <select
+                          value={teamsForActive.includes(award.team) ? award.team : ''}
+                          onChange={(e) => handleAwardChangeById(award.id, 'team', e.target.value)}
+                          className="border p-1 w-full"
+                        >
+                          <option value="">Select Team</option>
+                          {teamsForActive.map((team) => (
+                            <option key={team} value={team}>{team}</option>
+                          ))}
+                        </select>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <input
+                          type="number"
+                          value={award.awards}
+                          onChange={(e) => handleAwardChangeById(award.id, 'awards', e.target.value)}
+                          className="border p-1 w-20"
+                        />
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <input
+                          type="checkbox"
+                          checked={award.isCaptain}
+                          onChange={(e) => handleAwardChangeById(award.id, 'isCaptain', e.target.checked)}
+                          className="border p-1"
+                        />
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <select
+                          value={award.position}
+                          onChange={(e) => handleAwardChangeById(award.id, 'position', e.target.value)}
+                          className="border p-1 w-full"
+                        >
+                          <option value="OH">OH</option>
+                          <option value="MB">MB</option>
+                          <option value="S">S</option>
+                          <option value="RS">RS</option>
+                        </select>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <button
+                          onClick={() => handleRemovePlayerById(award.id)}
+                          className="bg-red-500 text-white px-2 py-1 rounded"
+                        >
+                          Remove
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </>
+      )}
     </div>
   );
 };
