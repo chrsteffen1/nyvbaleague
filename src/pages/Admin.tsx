@@ -28,6 +28,11 @@ type Player = {
 };
 type LeagueData = { divisionStats: DivisionStats; awardData: Player[] };
 
+// Draft caches
+type NameDrafts = Record<string, string>; // playerId -> typed name (only commit on blur)
+type TeamDraftFields = Partial<{ name: string; wins: string; losses: string }>;
+type TeamDrafts = Record<string, TeamDraftFields>; // teamId -> fields in progress
+
 const Admin: React.FC = () => {
   const [dbDivisions, setDbDivisions] = useState<DivisionRow[]>([]);
   const [dbTeams, setDbTeams] = useState<TeamRow[]>([]);
@@ -38,8 +43,9 @@ const Admin: React.FC = () => {
   const [selectedDivision, setSelectedDivision] = useState<string>('');
   const [selectedTeam, setSelectedTeam] = useState<string>(''); // '' = All, '__none__' = No Team
 
-  // Draft names so we only persist & resort on blur
-  const [nameDrafts, setNameDrafts] = useState<Record<string, string>>({});
+  // Drafts so we only persist & resort on blur
+  const [nameDrafts, setNameDrafts] = useState<NameDrafts>({});
+  const [teamDrafts, setTeamDrafts] = useState<TeamDrafts>({});
 
   // UI feedback
   const [msg, setMsg] = useState<{ type: 'error' | 'success' | 'info'; text: string } | null>(null);
@@ -70,6 +76,7 @@ const Admin: React.FC = () => {
     setDbTeams(teams ?? []);
     setDbPlayers(players ?? []);
     setNameDrafts({}); // clear drafts after refresh so sorting is stable
+    setTeamDrafts({});
   };
 
   // Initial load
@@ -97,6 +104,7 @@ const Admin: React.FC = () => {
   useEffect(() => {
     setSelectedTeam('');
     setNameDrafts({});
+    setTeamDrafts({});
   }, [selectedDivision]);
 
   // Build UI data
@@ -127,6 +135,7 @@ const Admin: React.FC = () => {
     });
 
     for (const key of Object.keys(divisionStats)) {
+      // Sort by saved names (not drafts) so editing doesn't reorder until commit
       divisionStats[key].sort((a, b) => a.name.localeCompare(b.name));
     }
 
@@ -237,22 +246,65 @@ const Admin: React.FC = () => {
     await fetchAll();
   };
 
-  // ----- Team editing -----
-  const handleTeamChange = async (
-    divisionName: string,
-    teamIndex: number,
-    field: 'name' | 'wins' | 'losses',
-    value: string
-  ) => {
-    const team = data.divisionStats[divisionName]?.[teamIndex];
-    if (!team) return;
-    const payload: Partial<TeamRow> =
-      field === 'wins' || field === 'losses'
-        ? ({ [field]: Number(value) || 0 } as any)
-        : ({ [field]: value } as any);
-    const { error } = await supabase.from('teams').update(payload).eq('id', team.id);
-    if (error) note('error', `Update team failed: ${error.message}`);
-    else note('success', 'Team updated.');
+  // ----- Team editing (DRAFT + COMMIT-ON-BLUR) -----
+
+  // update a single draft field for a team (live while typing)
+  const onTeamFieldChange = (teamId: string, field: 'name' | 'wins' | 'losses', value: string) => {
+    setTeamDrafts(prev => ({
+      ...prev,
+      [teamId]: {
+        ...(prev[teamId] ?? {}),
+        [field]: value
+      }
+    }));
+  };
+
+  // commit a single draft field to DB (onBlur)
+  const onTeamFieldBlur = async (team: Team, field: 'name' | 'wins' | 'losses') => {
+    const draft = teamDrafts[team.id]?.[field];
+    if (draft === undefined) return; // nothing to commit
+
+    // compute next value + detect no-op
+    if (field === 'name') {
+      const nextName = draft.trim();
+      if (nextName === team.name) {
+        // clear draft silently
+        setTeamDrafts(prev => {
+          const { [field]: _, ...restFields } = (prev[team.id] ?? {});
+          const next = { ...prev, [team.id]: restFields };
+          if (Object.keys(next[team.id]).length === 0) delete next[team.id];
+          return next;
+        });
+        return;
+      }
+      const { error } = await supabase.from('teams').update({ name: nextName }).eq('id', team.id);
+      if (error) note('error', `Update team failed: ${error.message}`);
+      else note('success', 'Team updated.');
+    } else {
+      const nextNum = Number(draft);
+      const safeNum = Number.isFinite(nextNum) ? nextNum : 0;
+      const current = field === 'wins' ? team.wins : team.losses;
+      if (safeNum === current) {
+        setTeamDrafts(prev => {
+          const { [field]: _, ...restFields } = (prev[team.id] ?? {});
+          const next = { ...prev, [team.id]: restFields };
+          if (Object.keys(next[team.id]).length === 0) delete next[team.id];
+          return next;
+        });
+        return;
+      }
+      const { error } = await supabase.from('teams').update({ [field]: safeNum } as any).eq('id', team.id);
+      if (error) note('error', `Update team failed: ${error.message}`);
+      else note('success', 'Team updated.');
+    }
+
+    // clear just this field's draft and refresh (to apply resorting etc.)
+    setTeamDrafts(prev => {
+      const { [field]: _, ...restFields } = (prev[team.id] ?? {});
+      const next = { ...prev, [team.id]: restFields };
+      if (Object.keys(next[team.id] ?? {}).length === 0) delete next[team.id];
+      return next;
+    });
     await fetchAll();
   };
 
@@ -483,7 +535,7 @@ const Admin: React.FC = () => {
         </div>
       </section>
 
-      {/* Team Standings */}
+      {/* Team Standings (teams edit with commit-on-blur) */}
       {!dbDivisions.length ? (
         <div className="p-4 bg-yellow-50 border border-yellow-200 rounded">
           No divisions found. Create one above to get started.
@@ -513,34 +565,44 @@ const Admin: React.FC = () => {
                 <div className="text-sm text-gray-500 mb-2">No teams in this division yet.</div>
               ) : null}
 
-              {teamsInDiv.map((team, teamIndex) => (
-                <div key={team.id} className="flex items-center mb-2">
-                  <input
-                    type="text"
-                    value={team.name}
-                    onChange={(e) => handleTeamChange(divisionName, teamIndex, 'name', e.target.value)}
-                    className="border p-1 mr-2"
-                  />
-                  <input
-                    type="number"
-                    value={team.wins}
-                    onChange={(e) => handleTeamChange(divisionName, teamIndex, 'wins', e.target.value)}
-                    className="border p-1 mr-2 w-20"
-                  />
-                  <input
-                    type="number"
-                    value={team.losses}
-                    onChange={(e) => handleTeamChange(divisionName, teamIndex, 'losses', e.target.value)}
-                    className="border p-1 mr-2 w-20"
-                  />
-                  <button
-                    onClick={() => handleRemoveTeam(divisionName, teamIndex)}
-                    className="bg-red-500 text-white px-2 py-1 rounded"
-                  >
-                    Remove
-                  </button>
-                </div>
-              ))}
+              {teamsInDiv.map((team, teamIndex) => {
+                const tDraft = teamDrafts[team.id] ?? {};
+                const nameValue = tDraft.name ?? team.name;
+                const winsValue = tDraft.wins ?? String(team.wins);
+                const lossesValue = tDraft.losses ?? String(team.losses);
+
+                return (
+                  <div key={team.id} className="flex items-center mb-2">
+                    <input
+                      type="text"
+                      value={nameValue}
+                      onChange={(e) => onTeamFieldChange(team.id, 'name', e.target.value)}
+                      onBlur={() => onTeamFieldBlur(team, 'name')}
+                      className="border p-1 mr-2"
+                    />
+                    <input
+                      type="number"
+                      value={winsValue}
+                      onChange={(e) => onTeamFieldChange(team.id, 'wins', e.target.value)}
+                      onBlur={() => onTeamFieldBlur(team, 'wins')}
+                      className="border p-1 mr-2 w-20"
+                    />
+                    <input
+                      type="number"
+                      value={lossesValue}
+                      onChange={(e) => onTeamFieldChange(team.id, 'losses', e.target.value)}
+                      onBlur={() => onTeamFieldBlur(team, 'losses')}
+                      className="border p-1 mr-2 w-20"
+                    />
+                    <button
+                      onClick={() => handleRemoveTeam(divisionName, teamIndex)}
+                      className="bg-red-500 text-white px-2 py-1 rounded"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           ))}
         </section>
