@@ -127,7 +127,7 @@ const Social: React.FC = () => {
 
           <div className="text-center mt-10">
             <a 
-              href="insert(YouTube channel URL)here"
+              href="https://www.youtube.com/@nyvbaleague"
               target="_blank"
               rel="noopener noreferrer" 
               className="inline-flex items-center text-white hover:text-orange-300 font-semibold"
