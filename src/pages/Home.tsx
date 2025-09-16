@@ -21,12 +21,11 @@ const Home: React.FC = () => {
       website: "https://www.forgefitnessny.com",
     },
     {
-      name: "Local Sports Bar & Grill",
-      logo: "https://images.pexels.com/photos/274349/pexels-photo-274349.jpeg?auto=compress&cs=tinysrgb&w=600",
-      description: "The best place to unwind after your matches.",
-      website: "insert(sponsor website)here",
-      level: "bronze" as const,
-    },
+      name: "Sportime",
+      logo: "https://cdn.sportimeny.com/assets/Brands6.png",
+      description: "SPORTIME Clubs — From Health to High Performance",
+      website: "https://www.sportimeny.com/",
+    }
   ];
 
   // Featured media (sample data)
