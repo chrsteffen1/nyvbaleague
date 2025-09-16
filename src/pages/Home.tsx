@@ -76,7 +76,7 @@ const Home: React.FC = () => {
                 </p>
                 <div className="flex items-center text-sm text-gray-500">
                   <Calendar size={16} className="mr-2" />
-                  <span>Wednesday Nights</span>
+                  <span>Tuesday Nights</span>
                 </div>
               </div>
             </div>
@@ -92,7 +92,7 @@ const Home: React.FC = () => {
                 </p>
                 <div className="flex items-center text-sm text-gray-500">
                   <Calendar size={16} className="mr-2" />
-                  <span>Tuesday Nights</span>
+                  <span>Wednesday Nights</span>
                 </div>
               </div>
             </div>
