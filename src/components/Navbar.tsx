@@ -62,7 +62,6 @@ const Navbar: React.FC = () => {
               <Link href="/sponsors" className="text-white hover:text-orange transition-colors">Sponsors</Link>
               <Link href="/social" className="text-white hover:text-orange transition-colors">Social</Link>
               <Link href="/scores" className="text-white hover:text-orange transition-colors">Scores</Link>
-              <Link href="/awards" className="text-white hover:text-orange transition-colors">Awards</Link>
             </div>
           </div>
         )}
